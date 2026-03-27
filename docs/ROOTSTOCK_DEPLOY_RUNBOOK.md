@@ -20,6 +20,7 @@ pnpm rootstock:contract:doctor
 ```
 
 This verifies:
+- repo-level `.env` is loaded automatically when present
 - env vars are present
 - `forge` is installed
 - `cast` is installed
