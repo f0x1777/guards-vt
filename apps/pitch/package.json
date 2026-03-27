@@ -1,0 +1,23 @@
+{
+  "name": "@guards/pitch",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "remotion studio",
+    "build": "remotion render GuardsPitch out/guards-pitch.mp4",
+    "build:demo": "remotion render PlatformDemo out/platform-demo.mp4",
+    "build:still": "remotion still GuardsPitch out/thumbnail.png"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.291",
+    "@remotion/player": "4.0.291",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "remotion": "4.0.291"
+  },
+  "devDependencies": {
+    "@remotion/eslint-config": "4.0.291",
+    "@types/react": "^19.0.0",
+    "typescript": "^5.8.0"
+  }
+}

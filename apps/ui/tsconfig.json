@@ -29,6 +29,9 @@
       ],
       "@anaconda/core": [
         "../../packages/core/src/index.ts"
+      ],
+      "@pitch/*": [
+        "../pitch/src/*"
       ]
     }
   },

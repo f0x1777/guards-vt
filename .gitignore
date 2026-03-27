@@ -8,3 +8,5 @@ node_modules/
 secrets/
 *.sqlite
 apps/blockchain/cardano/contracts/aiken/build/
+
+secrets/rootstock-testnet-wallets/
