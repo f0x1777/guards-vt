@@ -53,20 +53,25 @@ fi
 
 deployer_address="$(cast wallet address --private-key "${ROOTSTOCK_DEPLOYER_PRIVATE_KEY}")"
 bootstrap_signer_address="${deployer_address}"
+normalized_rootstock_governance_address="$(printf '%s' "${ROOTSTOCK_GOVERNANCE_ADDRESS}" | tr '[:upper:]' '[:lower:]')"
 
 if [[ -n "${ROOTSTOCK_GUARDED_VAULT_ADDRESS:-}" ]]; then
   governance_signer_private_key="${ROOTSTOCK_GOVERNANCE_PRIVATE_KEY:-}"
 
   if [[ -n "${governance_signer_private_key}" ]]; then
     governance_signer_address="$(cast wallet address --private-key "${governance_signer_private_key}")"
-    if [[ "${governance_signer_address,,}" != "${ROOTSTOCK_GOVERNANCE_ADDRESS,,}" ]]; then
+    normalized_governance_signer_address="$(printf '%s' "${governance_signer_address}" | tr '[:upper:]' '[:lower:]')"
+    if [[ "${normalized_governance_signer_address}" != "${normalized_rootstock_governance_address}" ]]; then
       echo "ROOTSTOCK_GOVERNANCE_PRIVATE_KEY does not match ROOTSTOCK_GOVERNANCE_ADDRESS" >&2
       exit 1
     fi
     bootstrap_signer_address="${governance_signer_address}"
-  elif [[ "${deployer_address,,}" != "${ROOTSTOCK_GOVERNANCE_ADDRESS,,}" ]]; then
-    echo "Bootstrap requires governance signing. Set ROOTSTOCK_GOVERNANCE_PRIVATE_KEY or use a deployer key that matches ROOTSTOCK_GOVERNANCE_ADDRESS." >&2
-    exit 1
+  else
+    normalized_deployer_address="$(printf '%s' "${deployer_address}" | tr '[:upper:]' '[:lower:]')"
+    if [[ "${normalized_deployer_address}" != "${normalized_rootstock_governance_address}" ]]; then
+      echo "Bootstrap requires governance signing. Set ROOTSTOCK_GOVERNANCE_PRIVATE_KEY or use a deployer key that matches ROOTSTOCK_GOVERNANCE_ADDRESS." >&2
+      exit 1
+    fi
   fi
 fi
 
