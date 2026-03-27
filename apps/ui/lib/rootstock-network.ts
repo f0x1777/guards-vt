@@ -14,6 +14,23 @@ export const ROOTSTOCK_TESTNET = {
 export interface Eip1193Provider {
   request: (args: { method: string; params?: unknown[] | object }) => Promise<unknown>;
   isMetaMask?: boolean;
+  isXOConnect?: boolean;
+}
+
+export function isUnknownChainError(error: unknown): boolean {
+  if (typeof error === "object" && error !== null && "code" in error && (error as { code?: unknown }).code === 4902) {
+    return true;
+  }
+  const message = error instanceof Error ? error.message : String(error);
+  return message.includes("4902") || message.toLowerCase().includes("unrecognized chain");
+}
+
+export function parseChainIdHex(chainIdHex: unknown): number | null {
+  if (typeof chainIdHex !== "string") {
+    return null;
+  }
+  const parsed = Number.parseInt(chainIdHex, 16);
+  return Number.isNaN(parsed) ? null : parsed;
 }
 
 export async function ensureRootstockTestnet(provider: Eip1193Provider): Promise<void> {
@@ -24,10 +41,8 @@ export async function ensureRootstockTestnet(provider: Eip1193Provider): Promise
     });
     return;
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    const unknownChain = message.includes("4902") || message.toLowerCase().includes("unrecognized chain");
-    if (!unknownChain) {
-      return;
+    if (!isUnknownChainError(error)) {
+      throw error;
     }
   }
 

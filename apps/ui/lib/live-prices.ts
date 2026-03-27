@@ -3,6 +3,7 @@ import type { DemoState, OracleSnapshot } from "./types";
 export interface LiveQuote extends OracleSnapshot {}
 
 export interface LiveQuoteMap {
+  rbtc?: LiveQuote;
   ada?: LiveQuote;
   xau?: LiveQuote;
   btc?: LiveQuote;
@@ -67,13 +68,17 @@ export function applyLiveQuotesToDemoState(
   state: DemoState,
   quotes: LiveQuoteMap,
 ): DemoState {
-  const ada = quotes.ada;
-  if (!ada) {
+  const riskQuote =
+    (state.policy.primaryAssetId === "rbtc" ? quotes.rbtc : undefined) ??
+    (state.policy.primaryAssetId === "ada" ? quotes.ada : undefined) ??
+    quotes.rbtc ??
+    quotes.ada;
+  if (!riskQuote) {
     return state;
   }
 
   const nowMs = Date.now();
-  if (!quotePassesGuardrails(ada, state.policy, nowMs)) {
+  if (!quotePassesGuardrails(riskQuote, state.policy, nowMs)) {
     return state;
   }
 
@@ -84,17 +89,17 @@ export function applyLiveQuotesToDemoState(
     return {
       ...state,
       nowMs,
-      oracle: ada,
+      oracle: riskQuote,
       metrics: {
         ...state.metrics,
-        drawdownBps: computeDrawdownBps(ada.price, ada.emaPrice),
-        oracleFreshness: formatOracleFreshness(nowMs, ada.updatedAtMs),
+        drawdownBps: computeDrawdownBps(riskQuote.price, riskQuote.emaPrice),
+        oracleFreshness: formatOracleFreshness(nowMs, riskQuote.updatedAtMs),
       },
     };
   }
 
   const stableFiatValue = stablePosition?.fiatValue ?? 0;
-  const riskFiatValue = riskPosition.amount * ada.price;
+  const riskFiatValue = riskPosition.amount * riskQuote.price;
   const liquidRiskValue = riskFiatValue * (1 - state.policy.haircutBps / 10_000);
   const liquidValue = liquidRiskValue + stableFiatValue;
   const stableRatio = liquidValue <= 0 ? 0 : stableFiatValue / liquidValue;
@@ -103,10 +108,10 @@ export function applyLiveQuotesToDemoState(
   return {
     ...state,
     nowMs,
-    oracle: ada,
+    oracle: riskQuote,
     positions: state.positions.map((position) => {
       if (position.role === "risk") {
-        const fiatValue = position.amount * ada.price;
+        const fiatValue = position.amount * riskQuote.price;
         return {
           ...position,
           fiatValue,
@@ -122,8 +127,8 @@ export function applyLiveQuotesToDemoState(
     metrics: {
       liquidValue,
       stableRatio,
-      drawdownBps: computeDrawdownBps(ada.price, ada.emaPrice),
-      oracleFreshness: formatOracleFreshness(nowMs, ada.updatedAtMs),
+      drawdownBps: computeDrawdownBps(riskQuote.price, riskQuote.emaPrice),
+      oracleFreshness: formatOracleFreshness(nowMs, riskQuote.updatedAtMs),
     },
   };
 }

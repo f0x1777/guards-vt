@@ -32,10 +32,10 @@ interface ParsedPriceFeed {
 
 const QUOTES: QuoteRequest[] = [
   {
-    key: "ada",
-    feedId: "pyth-ada-usd",
-    symbol: "ADA/USD",
-    symbolQuery: "ADA/USD",
+    key: "rbtc",
+    feedId: "pyth-rbtc-usd",
+    symbol: "RBTC/USD",
+    symbolQuery: "BTC/USD",
   },
   {
     key: "xau",
