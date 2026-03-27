@@ -35,6 +35,35 @@ contract GuardedTreasuryVaultTest is Test {
         vault.setAllowedAsset(asset, true);
     }
 
+    function testUnauthorizedCallerCannotExecuteTransfer() public {
+        vm.startPrank(governance);
+        vault.setAllowedAsset(asset, true);
+        vault.setAllowedDestination(destination, true);
+        vault.setMaxTransferAmount(asset, 1 ether);
+        vm.stopPrank();
+
+        vm.prank(stranger);
+        vm.expectRevert(GuardedTreasuryVault.NotAuthorized.selector);
+        vault.executeTransfer(asset, destination, 1 ether, bytes32("unauthorized"));
+    }
+
+    function testExecutionRejectsAssetNotAllowed() public {
+        vm.prank(operator);
+        vm.expectRevert(GuardedTreasuryVault.AssetNotAllowed.selector);
+        vault.executeTransfer(asset, destination, 1 ether, bytes32("asset"));
+    }
+
+    function testExecutionRejectsDestinationNotAllowed() public {
+        vm.startPrank(governance);
+        vault.setAllowedAsset(asset, true);
+        vault.setMaxTransferAmount(asset, 1 ether);
+        vm.stopPrank();
+
+        vm.prank(operator);
+        vm.expectRevert(GuardedTreasuryVault.DestinationNotAllowed.selector);
+        vault.executeTransfer(asset, destination, 1 ether, bytes32("destination"));
+    }
+
     function testPausedVaultRejectsExecution() public {
         vm.startPrank(governance);
         vault.setAllowedAsset(asset, true);
@@ -61,6 +90,29 @@ contract GuardedTreasuryVaultTest is Test {
         vm.prank(governance);
         vm.expectRevert(GuardedTreasuryVault.ExecutionNotImplemented.selector);
         vault.executeWithdrawal(asset, destination, 1 ether, bytes32("withdrawal"));
+    }
+
+    function testWithdrawalRemainsGovernanceOnly() public {
+        vm.startPrank(governance);
+        vault.setAllowedAsset(asset, true);
+        vault.setAllowedDestination(destination, true);
+        vault.setMaxTransferAmount(asset, 10 ether);
+        vm.stopPrank();
+
+        vm.prank(operator);
+        vm.expectRevert(GuardedTreasuryVault.NotGovernance.selector);
+        vault.executeWithdrawal(asset, destination, 1 ether, bytes32("withdrawal"));
+    }
+
+    function testExecutionRejectsUnsetLimit() public {
+        vm.startPrank(governance);
+        vault.setAllowedAsset(asset, true);
+        vault.setAllowedDestination(destination, true);
+        vm.stopPrank();
+
+        vm.prank(operator);
+        vm.expectRevert(GuardedTreasuryVault.TransferLimitExceeded.selector);
+        vault.executeTransfer(asset, destination, 1 ether, bytes32("no-limit"));
     }
 
     function testTransferLimitStillAppliesBeforeExecution() public {
