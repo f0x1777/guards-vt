@@ -27,6 +27,7 @@ contract GuardedTreasuryVault {
     error DestinationNotAllowed();
     error TransferLimitExceeded();
     error ZeroAddress();
+    error ExecutionNotImplemented();
 
     constructor(address initialGovernance, address initialOperator) {
         if (initialGovernance == address(0) || initialOperator == address(0)) revert ZeroAddress();
@@ -93,7 +94,8 @@ contract GuardedTreasuryVault {
         whenNotPaused
     {
         _validateOperation(asset, destination, amount);
-        emit TreasuryTransfer(asset, destination, amount, reference);
+        reference;
+        revert ExecutionNotImplemented();
     }
 
     function executeWithdrawal(address asset, address destination, uint256 amount, bytes32 reference)
@@ -102,7 +104,8 @@ contract GuardedTreasuryVault {
         whenNotPaused
     {
         _validateOperation(asset, destination, amount);
-        emit TreasuryWithdrawal(asset, destination, amount, reference);
+        reference;
+        revert ExecutionNotImplemented();
     }
 
     function _validateOperation(address asset, address destination, uint256 amount) internal view {
