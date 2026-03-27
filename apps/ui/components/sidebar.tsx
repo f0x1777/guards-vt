@@ -23,7 +23,7 @@ const navItems = [
   },
   {
     id: "accounts",
-    label: "Treasury",
+    label: "Treasury Management",
     icon: (
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 6h12M3 10h12M3 14h8" />
@@ -41,7 +41,7 @@ const navItems = [
   },
   {
     id: "admin",
-    label: "Admin",
+    label: "Organization",
     icon: (
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M9 2.5l5 2v4.5c0 3-2.1 5.6-5 6.5-2.9-.9-5-3.5-5-6.5V4.5l5-2z" />
@@ -71,26 +71,6 @@ const navItems = [
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M4 15l4-4 3 3 5-6" />
         <path d="M12 8h4v4" />
-      </svg>
-    ),
-  },
-  {
-    id: "execution",
-    label: "History",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="9" cy="9" r="7" />
-        <path d="M7.5 6l4 3-4 3V6z" fill="currentColor" />
-      </svg>
-    ),
-  },
-  {
-    id: "swap",
-    label: "Swap",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 7h10M11 4l3 3-3 3" />
-        <path d="M14 11H4M7 14l-3-3 3-3" />
       </svg>
     ),
   },

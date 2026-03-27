@@ -63,7 +63,7 @@ export function TreasuryActionsPanel({
       <div className="border-b border-line px-5 py-4">
         <h3 className="text-sm font-semibold text-text">Treasury Actions</h3>
         <p className="mt-1 text-xs text-text-muted">
-          Operator actions for treasury companies and DAOs. All actions stage the next step for the connected wallet and treasury rail.
+          Day-to-day treasury operations for the active vault. Actions stage the next step for the connected wallet and treasury rail.
         </p>
       </div>
       <div className="space-y-3 p-5">

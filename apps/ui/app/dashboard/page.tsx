@@ -187,6 +187,7 @@ export default function Dashboard() {
     () => applyLiveQuotesToDemoState(demoState, liveQuotes ?? {}),
     [liveQuotes],
   );
+  const liveQuotesEnabled = Boolean(liveQuotes?.rbtc);
   const policyView = buildPolicyViewFromDraft(bootstrapDraft);
   const activeProfile =
     companyVaultProfiles.find((candidate) => candidate.id === activeProfileId) ??
@@ -301,106 +302,120 @@ export default function Dashboard() {
             </motion.section>
           )}
           {/* Overview */}
-          {(activeSection === "overview" || activeSection === "accounts") && (
+          {activeSection === "overview" && (
             <motion.section key={activeSection} {...sectionTransition} className="space-y-6 mb-8">
-              {activeSection === "overview" && (
-                <>
-                  {/* Hero Metrics */}
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <MetricCard
-                      label="Liquid Value"
-                      value={`$${data.metrics.liquidValue.toLocaleString()}`}
-                      sub="After haircut"
-                      accent="blue"
-                    />
-                    <MetricCard
-                      label="Stable Ratio"
-                      value={`${(data.metrics.stableRatio * 100).toFixed(0)}%`}
-                      sub={`${stablePosition?.symbol ?? "Stable"} allocation`}
-                      accent="green"
-                    />
-                    <MetricCard
-                      label="Drawdown"
-                      value={`${data.metrics.drawdownBps} bps`}
-                      sub="vs EMA price"
-                      accent={
-                        data.metrics.drawdownBps > 700
-                          ? "red"
-                          : data.metrics.drawdownBps > 300
-                          ? "yellow"
-                          : "default"
-                      }
-                    />
-                    <MetricCard
-                      label="Oracle"
-                      value={data.metrics.oracleFreshness}
-                      sub={
-                        data.oracle.publisherCount != null
-                          ? `${data.oracle.publisherCount} publishers`
-                          : "— publishers"
-                      }
-                      accent="green"
-                    />
-                  </div>
+              <>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <MetricCard
+                    label="Liquid Value"
+                    value={`$${data.metrics.liquidValue.toLocaleString()}`}
+                    sub="After haircut"
+                    accent="blue"
+                  />
+                  <MetricCard
+                    label="Stable Ratio"
+                    value={`${(data.metrics.stableRatio * 100).toFixed(0)}%`}
+                    sub={`${stablePosition?.symbol ?? "Stable"} allocation`}
+                    accent="green"
+                  />
+                  <MetricCard
+                    label="Drawdown"
+                    value={`${data.metrics.drawdownBps} bps`}
+                    sub="vs policy baseline"
+                    accent={
+                      data.metrics.drawdownBps > 700
+                        ? "red"
+                        : data.metrics.drawdownBps > 300
+                        ? "yellow"
+                        : "default"
+                    }
+                  />
+                  <MetricCard
+                    label="Market Data"
+                    value={data.metrics.oracleFreshness}
+                    sub={liveQuotesEnabled ? "Live market feed" : "Demo fallback"}
+                    accent="green"
+                  />
+                </div>
 
-                  {/* Oracle Details */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.15, duration: 0.4 }}
-                    className="glass-panel p-6 relative overflow-hidden"
-                  >
-                    <div
-                      className="absolute -top-20 -left-20 w-60 h-60 rounded-full opacity-10 blur-3xl pointer-events-none"
-                      style={{ background: "#7c6ff7" }}
-                    />
-                    <div className="relative flex items-center justify-between mb-5">
-                      <div>
-                        <h3 className="text-sm font-semibold text-text">
-                          Oracle Feed
-                        </h3>
-                        <p className="text-xs text-text-muted mt-0.5 font-mono">
-                          {data.oracle.feedId}
-                        </p>
-                      </div>
-                      <span className="chip-green">
-                        <span className="relative flex h-1.5 w-1.5">
-                          <span className="animate-ping motion-reduce:animate-none absolute inline-flex h-full w-full rounded-full bg-green opacity-50" />
-                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green" />
-                        </span>
-                        Live
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15, duration: 0.4 }}
+                  className="glass-panel p-6 relative overflow-hidden"
+                >
+                  <div
+                    className="absolute -top-20 -left-20 w-60 h-60 rounded-full opacity-10 blur-3xl pointer-events-none"
+                    style={{ background: "#7c6ff7" }}
+                  />
+                  <div className="relative flex items-center justify-between mb-5">
+                    <div>
+                      <h3 className="text-sm font-semibold text-text">
+                        Market Feed
+                      </h3>
+                      <p className="text-xs text-text-muted mt-0.5 font-mono">
+                        {data.oracle.feedId}
+                      </p>
+                    </div>
+                    <span className="chip-green">
+                      <span className="relative flex h-1.5 w-1.5">
+                        <span className="animate-ping motion-reduce:animate-none absolute inline-flex h-full w-full rounded-full bg-green opacity-50" />
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green" />
                       </span>
+                      Live
+                    </span>
+                  </div>
+                  <div className="relative grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                      <p className="eyebrow">Spot Price</p>
+                      <p className="text-lg font-bold font-mono mt-1.5 text-text">
+                        ${data.oracle.price.toFixed(2)}
+                      </p>
                     </div>
-                    <div className="relative grid grid-cols-2 lg:grid-cols-4 gap-6">
-                      {[
-                        { label: "Spot Price", value: `$${data.oracle.price.toFixed(4)}` },
-                        { label: "EMA Price", value: `$${data.oracle.emaPrice.toFixed(4)}` },
-                        { label: "Confidence", value: `±$${data.oracle.confidence.toFixed(4)}` },
-                        { label: "Symbol", value: data.oracle.symbol, accent: true },
-                      ].map((item) => (
-                        <div key={item.label}>
-                          <p className="eyebrow">{item.label}</p>
-                          <p
-                            className={`text-lg font-bold font-mono mt-1.5 ${
-                              item.accent ? "text-accent" : "text-text"
-                            }`}
-                          >
-                            {item.value}
-                          </p>
-                        </div>
-                      ))}
+                    <div>
+                      <p className="eyebrow">Symbol</p>
+                      <p className="text-lg font-bold font-mono mt-1.5 text-accent">
+                        {data.oracle.symbol}
+                      </p>
                     </div>
-                  </motion.div>
-                </>
-              )}
+                    <div>
+                      <p className="eyebrow">Feed Status</p>
+                      <p className="text-lg font-bold font-mono mt-1.5 text-text">
+                        {liveQuotesEnabled ? "Live market data" : "Demo fallback"}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              </>
+            </motion.section>
+          )}
 
+          {activeSection === "accounts" && (
+            <motion.section key="accounts" {...sectionTransition} className="space-y-6 mb-8">
               <AccountsTable positions={data.positions} />
+              <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+                <TreasuryActionsPanel
+                  walletSession={walletSession}
+                  actionMessage={treasuryActionMessage}
+                  onAction={handleTreasuryAction}
+                />
+                <SwapPanel
+                  riskSymbol={riskPosition?.symbol ?? "RBTC"}
+                  stableSymbol={stablePosition?.symbol ?? "DOC"}
+                  currentPrice={data.oracle.price}
+                  oracleFreshness={data.metrics.oracleFreshness}
+                  haircutBps={policyView.haircutBps}
+                  routeId={bootstrapDraft.approvedRouteId}
+                />
+              </div>
+              <ExecutionTimeline events={data.events} referenceNowMs={data.nowMs} />
             </motion.section>
           )}
 
           {/* Policy */}
           {activeSection === "policy" && (
             <motion.section key="policy" {...sectionTransition} className="space-y-6 mb-8">
+              <PolicyCards policy={policyView} />
               <VaultBootstrapLab
                 draft={bootstrapDraft}
                 setDraft={setBootstrapDraft}
@@ -412,9 +427,8 @@ export default function Dashboard() {
                     maxStaleUs: demoState.policy.maxStaleUs,
                     maxConfidenceBps: demoState.policy.maxConfidenceBps,
                   },
-                )}
+                  )}
               />
-              <PolicyCards policy={policyView} />
             </motion.section>
           )}
 
@@ -459,38 +473,6 @@ export default function Dashboard() {
                 />
                 <VaultAdminPanel profile={activeProfile} />
               </div>
-              <TreasuryActionsPanel
-                walletSession={walletSession}
-                actionMessage={treasuryActionMessage}
-                onAction={handleTreasuryAction}
-              />
-            </motion.section>
-          )}
-
-          {activeSection === "execution" && (
-            <motion.section key="execution" {...sectionTransition} className="mb-8 grid gap-6 xl:grid-cols-[1.35fr_0.95fr]">
-              <ExecutionTimeline events={data.events} referenceNowMs={data.nowMs} />
-              <div className="space-y-6">
-                <TreasuryActionsPanel
-                  walletSession={walletSession}
-                  actionMessage={treasuryActionMessage}
-                  onAction={handleTreasuryAction}
-                />
-              </div>
-            </motion.section>
-          )}
-
-          {/* Swap */}
-          {activeSection === "swap" && (
-            <motion.section key="swap" {...sectionTransition} className="mb-8 max-w-md">
-              <SwapPanel
-                riskSymbol={riskPosition?.symbol ?? "RBTC"}
-                stableSymbol={stablePosition?.symbol ?? "DOC"}
-                currentPrice={data.oracle.price}
-                oracleFreshness={data.metrics.oracleFreshness}
-                haircutBps={policyView.haircutBps}
-                routeId={bootstrapDraft.approvedRouteId}
-              />
             </motion.section>
           )}
 
