@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+interface IERC20Minimal {
+    function transfer(address to, uint256 amount) external returns (bool);
+}
+
 contract GuardedTreasuryVault {
     address public governance;
     address public operator;
@@ -9,6 +13,7 @@ contract GuardedTreasuryVault {
     mapping(address => bool) public allowedAssets;
     mapping(address => bool) public allowedDestinations;
     mapping(address => uint256) public maxTransferAmount;
+    mapping(bytes32 => bool) public usedReferenceIds;
 
     event GovernanceTransferred(address indexed previousGovernance, address indexed nextGovernance);
     event OperatorUpdated(address indexed previousOperator, address indexed nextOperator);
@@ -19,6 +24,7 @@ contract GuardedTreasuryVault {
     event TransferLimitSet(address indexed asset, uint256 amount);
     event TreasuryTransfer(address indexed asset, address indexed destination, uint256 amount, bytes32 referenceId);
     event TreasuryWithdrawal(address indexed asset, address indexed destination, uint256 amount, bytes32 referenceId);
+    event NativeDeposit(address indexed account, uint256 amount);
 
     error NotGovernance();
     error NotAuthorized();
@@ -27,12 +33,19 @@ contract GuardedTreasuryVault {
     error DestinationNotAllowed();
     error TransferLimitExceeded();
     error ZeroAddress();
-    error ExecutionNotImplemented();
+    error InvalidAmount();
+    error DuplicateReferenceId();
+    error NativeTransferFailed();
+    error TokenTransferFailed();
 
     constructor(address initialGovernance, address initialOperator) {
         if (initialGovernance == address(0) || initialOperator == address(0)) revert ZeroAddress();
         governance = initialGovernance;
         operator = initialOperator;
+    }
+
+    receive() external payable {
+        emit NativeDeposit(msg.sender, msg.value);
     }
 
     modifier onlyGovernance() {
@@ -71,7 +84,6 @@ contract GuardedTreasuryVault {
     }
 
     function setAllowedAsset(address asset, bool allowed) external onlyGovernance {
-        if (asset == address(0)) revert ZeroAddress();
         allowedAssets[asset] = allowed;
         emit AssetAllowed(asset, allowed);
     }
@@ -83,33 +95,53 @@ contract GuardedTreasuryVault {
     }
 
     function setMaxTransferAmount(address asset, uint256 amount) external onlyGovernance {
-        if (asset == address(0)) revert ZeroAddress();
         maxTransferAmount[asset] = amount;
         emit TransferLimitSet(asset, amount);
     }
 
-    function executeTransfer(address asset, address destination, uint256 amount, bytes32)
+    function executeTransfer(address asset, address destination, uint256 amount, bytes32 referenceId)
         external
         onlyAuthorized
         whenNotPaused
     {
-        _validateOperation(asset, destination, amount);
-        revert ExecutionNotImplemented();
+        _executeOperation(asset, destination, amount, referenceId);
+        emit TreasuryTransfer(asset, destination, amount, referenceId);
     }
 
-    function executeWithdrawal(address asset, address destination, uint256 amount, bytes32)
+    function executeWithdrawal(address asset, address destination, uint256 amount, bytes32 referenceId)
         external
         onlyGovernance
         whenNotPaused
     {
+        _executeOperation(asset, destination, amount, referenceId);
+        emit TreasuryWithdrawal(asset, destination, amount, referenceId);
+    }
+
+    function _executeOperation(address asset, address destination, uint256 amount, bytes32 referenceId) internal {
+        if (usedReferenceIds[referenceId]) revert DuplicateReferenceId();
+        usedReferenceIds[referenceId] = true;
         _validateOperation(asset, destination, amount);
-        revert ExecutionNotImplemented();
+
+        if (asset == address(0)) {
+            (bool ok,) = destination.call{value: amount}("");
+            if (!ok) revert NativeTransferFailed();
+            return;
+        }
+
+        if (!_safeTransferToken(asset, destination, amount)) revert TokenTransferFailed();
     }
 
     function _validateOperation(address asset, address destination, uint256 amount) internal view {
         if (!allowedAssets[asset]) revert AssetNotAllowed();
         if (!allowedDestinations[destination]) revert DestinationNotAllowed();
+        if (amount == 0) revert InvalidAmount();
         uint256 limit = maxTransferAmount[asset];
         if (limit == 0 || amount > limit) revert TransferLimitExceeded();
+    }
+
+    function _safeTransferToken(address asset, address destination, uint256 amount) internal returns (bool) {
+        (bool success, bytes memory data) =
+            asset.call(abi.encodeCall(IERC20Minimal.transfer, (destination, amount)));
+        return success && (data.length == 0 || abi.decode(data, (bool)));
     }
 }

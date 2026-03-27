@@ -15,11 +15,14 @@ MVP responsibilities:
 - per-asset max transfer amount
 - bounded transfer execution
 - bounded withdrawal execution
+- replay protection via `referenceId`
+- native `RBTC` and ERC20 custody execution
 
 Current implementation note:
-- guardrails and role checks are scaffolded
-- deployment script and tests are scaffolded
-- transfer and withdrawal execution intentionally revert until real custody semantics are implemented
+- guardrails and role checks are implemented
+- transfer and withdrawal execution are live for bounded `RBTC` and ERC20 movements
+- Foundry deploy script and tests are live
+- protocol-specific DeFi execution stays outside the vault and should be routed through bounded adapters
 
 ## Tooling choice
 
@@ -30,10 +33,10 @@ The repository vendors only the minimal `forge-std` source and license files nee
 ## Next steps
 
 1. Add RPC and deployer env vars for Rootstock testnet
-2. Wire real asset movement and vault custody semantics
-3. Deploy the first contract to Rootstock testnet
+2. Deploy the first contract to Rootstock testnet
+3. Route a bounded Money on Chain or Sovryn action through an operator flow
 
 ## Validation status
 
-- `forge test` passes locally against the current scaffold
-- execution paths remain intentionally fail-closed until real vault custody is wired
+- `forge test` passes locally against live bounded transfer/withdrawal execution
+- the vault supports `RBTC` via `address(0)` and ERC20 transfers with destination + asset allowlists

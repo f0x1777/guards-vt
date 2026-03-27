@@ -13,8 +13,8 @@ contract DeployGuardedTreasuryVault is Script {
     }
 
     function run() external {
-        address governance = vm.envAddress("GOVERNANCE");
-        address operator = vm.envAddress("OPERATOR");
+        address governance = vm.envAddress("ROOTSTOCK_GOVERNANCE_ADDRESS");
+        address operator = vm.envAddress("ROOTSTOCK_OPERATOR_ADDRESS");
 
         vm.startBroadcast();
         lastDeployedVault = new GuardedTreasuryVault(governance, operator);

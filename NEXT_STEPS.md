@@ -22,6 +22,7 @@ This is the canonical tracker for the Rootstock / Beexo derivation of Guards.
 - [x] Add guardrail-focused Foundry tests for the first contract scaffold
 - [x] Install Foundry in the real dev environment and validate the scaffold
 - [x] Keep the Foundry vendor footprint minimal and ignore generated artifacts
+- [x] Implement bounded `RBTC` / ERC20 transfer and withdrawal execution in `GuardedTreasuryVault`
 - [ ] Deploy at least one contract on Rootstock testnet
 - [ ] Document deployed addresses and networks
 
@@ -43,7 +44,8 @@ This is the canonical tracker for the Rootstock / Beexo derivation of Guards.
 ## DeFi Integrations
 - [x] Scaffold protocol adapter surfaces for Money on Chain and Sovryn
 - [x] Add fail-closed tests for Rootstock protocol adapter scaffolds
-- [ ] Evaluate Money on Chain for stable / BTC-denominated treasury flows
+- [x] Evaluate Money on Chain for stable / BTC-denominated treasury flows
+- [x] Replace the Money on Chain scaffold with executable `mintDoc` / `redeemFreeDoc` calldata preparation
 - [ ] Evaluate Tropykus for treasury lending / collateral management use cases
 - [ ] Evaluate Sovryn for swaps or treasury movement workflows
 - [ ] Pick one real Rootstock-native integration for the demo

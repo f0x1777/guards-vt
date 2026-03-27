@@ -93,6 +93,13 @@ Potential MVP capabilities:
 - treasury health views and account controls
 - wallet-first UX using Beexo Connect
 
+Today the Rootstock vault surface already supports:
+- bounded `RBTC` and ERC20 treasury transfers
+- governance-only withdrawals
+- destination and asset allowlists
+- per-asset execution caps
+- replay protection for staged treasury actions
+
 ## Bounded Automation Direction
 
 Automatic swaps are possible on Rootstock, but the product should frame them as bounded treasury actions, not arbitrary trading.
@@ -104,6 +111,7 @@ The intended model is:
 - the vault contract enforces limits before execution
 
 The first real protocol target should be either `Money on Chain` or `Sovryn`, depending on which yields the most credible demo path fastest.
+The current implementation priority is `Money on Chain`, with executable `RBTC <-> DOC` calldata preparation wired in the off-chain adapter layer.
 
 ## Quick Start
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  moneyOnChainAdapter,
+  createMoneyOnChainAdapter,
   sovrynAdapter,
   type TreasuryActionIntent,
 } from "../rootstock/offchain/src/index.js";
@@ -28,6 +28,11 @@ function buildIntent(overrides: Partial<TreasuryActionIntent> = {}): TreasuryAct
 }
 
 describe("rootstock protocol adapters", () => {
+  const moneyOnChainAdapter = createMoneyOnChainAdapter({
+    mocAddress: "0x1111111111111111111111111111111111111111",
+    vendorAddress: "0x2222222222222222222222222222222222222222",
+  });
+
   it("fails closed on mismatched protocol ids", () => {
     const intent = buildIntent();
 
@@ -71,13 +76,49 @@ describe("rootstock protocol adapters", () => {
     expect(() => moneyOnChainAdapter.prepare(invalidSlippage)).toThrow(/slippageBps/i);
   });
 
-  it("returns scaffold-only actions with no executable calls", () => {
+  it("prepares executable Money on Chain mint calls for RBTC -> DOC", () => {
     const intent = buildIntent();
     const result = moneyOnChainAdapter.prepare(intent);
 
     expect(result.protocolId).toBe("money-on-chain");
-    expect(result.scaffoldOnly).toBe(true);
-    expect(result.calls).toEqual([]);
+    expect(result.scaffoldOnly).toBeUndefined();
+    expect(result.calls).toHaveLength(1);
+    expect(result.calls[0]?.target).toBe("0x1111111111111111111111111111111111111111");
+    expect(result.calls[0]?.value).toBe(intent.amount);
+    expect(result.calls[0]?.data.startsWith("0x")).toBe(true);
+  });
+
+  it("prepares executable Money on Chain redeem calls for DOC -> RBTC", () => {
+    const result = moneyOnChainAdapter.prepare(
+      buildIntent({
+        kind: "withdraw",
+        route: {
+          ...buildIntent().route,
+          sellToken: "DOC",
+          buyToken: "RBTC",
+        },
+      }),
+    );
+
+    expect(result.protocolId).toBe("money-on-chain");
+    expect(result.approvalSurface).toBe("governance");
+    expect(result.calls).toHaveLength(1);
+    expect(result.calls[0]?.value).toBeUndefined();
+    expect(result.calls[0]?.data.startsWith("0x")).toBe(true);
+  });
+
+  it("rejects unsupported Money on Chain pairs in the MVP", () => {
+    expect(() =>
+      moneyOnChainAdapter.prepare(
+        buildIntent({
+          route: {
+            ...buildIntent().route,
+            sellToken: "DOC",
+            buyToken: "USDT",
+          },
+        }),
+      ),
+    ).toThrow(/supports only RBTC\/DOC and DOC\/RBTC/i);
   });
 
   it("prepares a scaffold-only Sovryn action when the intent is valid", () => {
