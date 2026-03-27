@@ -36,13 +36,14 @@ interface FrankfurterResponse {
 interface QuotesResponseBody {
   ok: boolean;
   source: "market_live";
-  quotes: {
+  quotes: Partial<{
     rbtc: MarketQuote;
     btc: MarketQuote;
     sol: MarketQuote;
     xau: MarketQuote;
     eur: MarketQuote;
-  };
+  }>;
+  sourceErrors?: string[];
 }
 
 interface QuoteCacheEntry {
@@ -75,12 +76,8 @@ async function fetchJson<T>(url: string): Promise<T> {
   return (await response.json()) as T;
 }
 
-function requireNumber(value: number | undefined, label: string): number {
-  if (!Number.isFinite(value)) {
-    throw new Error(`Market data response is missing numeric field ${label}`);
-  }
-
-  return value as number;
+function finiteOrNull(value: number | undefined): number | null {
+  return Number.isFinite(value) && value !== undefined ? value : null;
 }
 
 function nextEmaPrice(feedId: string, price: number, updatedAtMs: number): number {
@@ -123,61 +120,96 @@ function buildQuote(
 }
 
 export async function GET() {
-  try {
-    const nowMs = Date.now();
-    if (quoteCache && quoteCache.expiresAtMs > nowMs) {
-      return NextResponse.json(quoteCache.body);
+  const nowMs = Date.now();
+  if (quoteCache && quoteCache.expiresAtMs > nowMs) {
+    return NextResponse.json(quoteCache.body);
+  }
+
+  const [coingeckoResult, goldResult, eurResult] = await Promise.allSettled([
+    fetchJson<CoinGeckoSimplePriceResponse>(
+      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,solana&vs_currencies=usd",
+    ),
+    fetchJson<GoldApiResponse>("https://api.gold-api.com/price/XAU"),
+    fetchJson<FrankfurterResponse>("https://api.frankfurter.app/latest?from=EUR&to=USD"),
+  ]);
+
+  const sourceErrors: string[] = [];
+  const quotes: QuotesResponseBody["quotes"] = {};
+
+  if (coingeckoResult.status === "fulfilled") {
+    const coingecko = coingeckoResult.value;
+    const btcUsd = finiteOrNull(coingecko.bitcoin?.usd);
+    const solUsd = finiteOrNull(coingecko.solana?.usd);
+    if (btcUsd !== null) {
+      quotes.rbtc = buildQuote("market-rbtc-usd", "RBTC/USD", btcUsd, nowMs, 0.0012);
+      quotes.btc = buildQuote("market-btc-usd", "BTC/USD", btcUsd, nowMs, 0.0012);
+    } else {
+      sourceErrors.push("coingecko: missing bitcoin.usd (affects rbtc and btc quotes)");
     }
+    if (solUsd !== null) {
+      quotes.sol = buildQuote("market-sol-usd", "SOL/USD", solUsd, nowMs, 0.0018);
+    } else {
+      sourceErrors.push("coingecko: missing solana.usd");
+    }
+  } else {
+    sourceErrors.push(
+      `coingecko: ${coingeckoResult.reason instanceof Error ? coingeckoResult.reason.message : "fetch failed"}`,
+    );
+  }
 
-    const [coingecko, gold, eur] = await Promise.all([
-      fetchJson<CoinGeckoSimplePriceResponse>(
-        "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,solana&vs_currencies=usd",
-      ),
-      fetchJson<GoldApiResponse>("https://api.gold-api.com/price/XAU"),
-      fetchJson<FrankfurterResponse>("https://api.frankfurter.app/latest?from=EUR&to=USD"),
-    ]);
+  if (goldResult.status === "fulfilled") {
+    const gold = goldResult.value;
+    const xauUsd = finiteOrNull(gold.price);
+    if (xauUsd !== null) {
+      const goldUpdatedAtMs = (() => {
+        if (!gold.updatedAt) return nowMs;
+        const parsed = Date.parse(gold.updatedAt);
+        return Number.isFinite(parsed) ? parsed : nowMs;
+      })();
+      quotes.xau = buildQuote("market-xau-usd", "XAU/USD", xauUsd, goldUpdatedAtMs, 0.0008);
+    } else {
+      sourceErrors.push("gold-api: missing price");
+    }
+  } else {
+    sourceErrors.push(
+      `gold-api: ${goldResult.reason instanceof Error ? goldResult.reason.message : "fetch failed"}`,
+    );
+  }
 
-    const goldUpdatedAtMs = (() => {
-      if (!gold.updatedAt) {
-        return nowMs;
-      }
+  if (eurResult.status === "fulfilled") {
+    const eur = eurResult.value;
+    const eurUsd = finiteOrNull(eur.rates?.USD);
+    if (eurUsd !== null) {
+      quotes.eur = buildQuote("market-eur-usd", "EUR/USD", eurUsd, nowMs, 0.0002);
+    } else {
+      sourceErrors.push("frankfurter: missing rates.USD");
+    }
+  } else {
+    sourceErrors.push(
+      `frankfurter: ${eurResult.reason instanceof Error ? eurResult.reason.message : "fetch failed"}`,
+    );
+  }
 
-      const parsed = Date.parse(gold.updatedAt);
-      return Number.isFinite(parsed) ? parsed : nowMs;
-    })();
-
-    const btcUsd = requireNumber(coingecko.bitcoin?.usd, "bitcoin.usd");
-    const solUsd = requireNumber(coingecko.solana?.usd, "solana.usd");
-    const xauUsd = requireNumber(gold.price, "xau.price");
-    const eurUsd = requireNumber(eur.rates?.USD, "eur.usd");
-
-    const body: QuotesResponseBody = {
-      ok: true,
-      source: "market_live",
-      quotes: {
-        rbtc: buildQuote("market-rbtc-usd", "RBTC/USD", btcUsd, nowMs, 0.0012),
-        btc: buildQuote("market-btc-usd", "BTC/USD", btcUsd, nowMs, 0.0012),
-        sol: buildQuote("market-sol-usd", "SOL/USD", solUsd, nowMs, 0.0018),
-        xau: buildQuote("market-xau-usd", "XAU/USD", xauUsd, goldUpdatedAtMs, 0.0008),
-        eur: buildQuote("market-eur-usd", "EUR/USD", eurUsd, nowMs, 0.0002),
-      },
-    };
-    quoteCache = {
-      expiresAtMs: nowMs + QUOTE_CACHE_TTL_MS,
-      body,
-    };
-
-    return NextResponse.json(body);
-  } catch (error) {
+  if (Object.keys(quotes).length === 0) {
     return NextResponse.json(
       {
         ok: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Unable to fetch live market quotes.",
+        error: `All market data sources failed: ${sourceErrors.join("; ")}`,
       },
       { status: 502 },
     );
   }
+
+  const body: QuotesResponseBody = {
+    ok: true,
+    source: "market_live",
+    quotes,
+    ...(sourceErrors.length > 0 && { sourceErrors }),
+  };
+  quoteCache = {
+    expiresAtMs: nowMs + QUOTE_CACHE_TTL_MS,
+    body,
+  };
+
+  return NextResponse.json(body);
 }

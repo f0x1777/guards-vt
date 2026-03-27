@@ -119,7 +119,7 @@ export default function Dashboard() {
         setWalletModalOpen(true);
       }
     }
-  }, [walletSession]);
+  }, [walletSessionHydrated]);
 
   useEffect(() => {
     if (!liveQuotesPollingEnabled) {
