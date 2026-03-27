@@ -44,6 +44,32 @@ using:
 
 - `ROOTSTOCK_DEPLOYER_PRIVATE_KEY`
 
+## Bootstrap Configuration
+
+After deployment, set these env vars:
+
+- `ROOTSTOCK_GUARDED_VAULT_ADDRESS`
+- `ROOTSTOCK_ALLOWED_ASSETS`
+- `ROOTSTOCK_ALLOWED_DESTINATIONS`
+- `ROOTSTOCK_LIMIT_ASSETS`
+- `ROOTSTOCK_LIMIT_VALUES`
+
+Then run:
+
+```bash
+pnpm rootstock:contract:configure:testnet
+```
+
+This executes:
+
+- `script/BootstrapGuardedTreasuryVault.s.sol:BootstrapGuardedTreasuryVault`
+
+and configures:
+
+- allowed assets
+- allowed destinations
+- per-asset transfer caps
+
 ## Expected Output
 
 After a successful run, record:
