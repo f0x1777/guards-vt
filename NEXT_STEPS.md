@@ -25,8 +25,8 @@ This is the canonical tracker for the Rootstock / Beexo derivation of Guards.
 - [ ] Document deployed addresses and networks
 
 ## Beexo Connect Track
-- [ ] Install and integrate `xo-connect`
-- [ ] Replace demo-only wallet flows with Beexo-first EIP-1193 connection
+- [x] Install and integrate `xo-connect`
+- [x] Add a first Beexo / EIP-1193 Rootstock wallet scaffold in the UI
 - [ ] Add wallet onboarding flow for LATAM-oriented users
 - [ ] Show connected wallet state in the dashboard and landing CTA
 - [ ] Validate a demonstrable Beexo flow in the final demo
@@ -39,6 +39,8 @@ This is the canonical tracker for the Rootstock / Beexo derivation of Guards.
 - [ ] Define whether one wallet can manage multiple company vaults in the MVP
 
 ## DeFi Integrations
+- [x] Scaffold protocol adapter surfaces for Money on Chain and Sovryn
+- [x] Add fail-closed tests for Rootstock protocol adapter scaffolds
 - [ ] Evaluate Money on Chain for stable / BTC-denominated treasury flows
 - [ ] Evaluate Tropykus for treasury lending / collateral management use cases
 - [ ] Evaluate Sovryn for swaps or treasury movement workflows

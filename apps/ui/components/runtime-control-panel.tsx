@@ -50,7 +50,7 @@ export function RuntimeControlPanel({
             <h3 className="text-sm font-semibold text-text">Runtime Control</h3>
             <p className="mt-1 text-xs text-text-muted">
               Toggle between mock replay and the current Rootstock-oriented dashboard snapshot.
-              Use demo wallets now; Beexo and broader EVM wallet wiring come next.
+              Use demo wallets now; the primary target is Beexo Connect on Rootstock testnet.
             </p>
           </div>
           <span className="chip-accent">Demo-first</span>
@@ -143,7 +143,7 @@ export function RuntimeControlPanel({
               <p className="mt-2 text-xs text-text-muted">Lets the team demo the multichain control plane while SVM wallet adapters are wired.</p>
             </button>
             <div className="rounded-2xl border border-line bg-bg-soft p-4 text-left">
-              <p className="text-sm font-semibold text-text">Real connectors</p>
+              <p className="text-sm font-semibold text-text">Beexo / wallet connectors</p>
               <div className="mt-2 space-y-1 text-xs text-text-muted">
                 <p>EVM provider detected: {evmDetected ? "yes" : "no"}</p>
                 <p>SVM provider detected: {svmDetected ? "yes" : "no"}</p>

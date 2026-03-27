@@ -1,5 +1,7 @@
+import { connectBeexoOrEvmWallet } from "./beexo-connect";
+
 export type WalletSessionChain = "evm" | "svm" | "cardano";
-export type WalletSessionKind = "mock" | "eip1193" | "cip30" | "wallet_standard";
+export type WalletSessionKind = "mock" | "beexo_eip1193" | "eip1193" | "cip30" | "wallet_standard";
 
 export interface WalletSession {
   id: string;
@@ -46,7 +48,7 @@ export function hydrateStoredWalletSession(): WalletSession | null {
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as Partial<WalletSession>;
-    if (typeof parsed !== "object" || parsed == null || typeof parsed.id !== "string" || (parsed.chain !== "evm" && parsed.chain !== "cardano" && parsed.chain !== "svm") || (parsed.kind !== "mock" && parsed.kind !== "eip1193" && parsed.kind !== "cip30" && parsed.kind !== "wallet_standard") || typeof parsed.label !== "string" || typeof parsed.address !== "string" || typeof parsed.connectedAtMs !== "number") {
+    if (typeof parsed !== "object" || parsed == null || typeof parsed.id !== "string" || (parsed.chain !== "evm" && parsed.chain !== "cardano" && parsed.chain !== "svm") || (parsed.kind !== "mock" && parsed.kind !== "beexo_eip1193" && parsed.kind !== "eip1193" && parsed.kind !== "cip30" && parsed.kind !== "wallet_standard") || typeof parsed.label !== "string" || typeof parsed.address !== "string" || typeof parsed.connectedAtMs !== "number") {
       throw new Error("Invalid stored wallet session shape.");
     }
     return parsed as WalletSession;
@@ -89,13 +91,32 @@ export function detectWalletAvailability(): WalletAvailability {
 }
 
 async function connectEvmWallet(): Promise<WalletSession | null> {
-  const provider = getEvmProvider();
-  if (!provider?.request) return null;
   try {
-    const accounts = await provider.request({ method: "eth_requestAccounts" });
-    const address = Array.isArray(accounts) && typeof accounts[0] === "string" && accounts[0].length > 0 ? accounts[0] : "0x-rootstock-wallet";
-    return { id: `eip1193-${address.toLowerCase()}`, chain: "evm", kind: "eip1193", label: provider.isMetaMask ? "EVM Wallet" : "Beexo / EVM Wallet", address, connectedAtMs: Date.now() };
-  } catch { return null; }
+    const result = await connectBeexoOrEvmWallet();
+    if (!result) return null;
+    return {
+      id: `eip1193-${result.address.toLowerCase()}`,
+      chain: "evm",
+      kind: "beexo_eip1193",
+      label: result.label,
+      address: result.address,
+      connectedAtMs: Date.now(),
+    };
+  } catch {
+    const provider = getEvmProvider();
+    if (!provider?.request) return null;
+    try {
+      const accounts = await provider.request({ method: "eth_requestAccounts" });
+      const address =
+        Array.isArray(accounts) &&
+        typeof accounts[0] === "string" &&
+        accounts[0].length > 0
+          ? accounts[0]
+          : null;
+      if (address === null) return null;
+      return { id: `eip1193-${address.toLowerCase()}`, chain: "evm", kind: "eip1193", label: provider.isMetaMask ? "EVM Wallet" : "Beexo / EVM Wallet", address, connectedAtMs: Date.now() };
+    } catch { return null; }
+  }
 }
 async function connectCardanoWallet(): Promise<WalletSession | null> {
   const [providerKey, provider] = getCardanoProviders()[0] ?? [];

@@ -16,7 +16,7 @@ import { AuditLog } from "@/components/audit-log";
 import {
   PreprodWarningBanner,
   PreprodWarningModal,
-} from "@/components/testnet-warning";
+} from "@/components/preprod-warning";
 import { VaultBootstrapLab } from "@/components/vault-bootstrap-lab";
 import { ScenarioLab } from "@/components/scenario-lab";
 import { HistoricalStrategyLab } from "@/components/historical-strategy-lab";

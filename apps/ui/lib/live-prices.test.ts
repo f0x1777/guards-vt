@@ -30,22 +30,22 @@ describe("applyLiveQuotesToDemoState", () => {
     vi.useRealTimers();
   });
 
-  it("is a no-op when there is no ADA quote", () => {
+  it("is a no-op when there is no matching risk quote", () => {
     const state = cloneState();
     expect(applyLiveQuotesToDemoState(state, {})).toEqual(state);
   });
 
   it("rejects stale or low-confidence quotes using policy guardrails", () => {
     const staleQuote: LiveQuoteMap = {
-      ada: {
+      rbtc: {
         ...stateOracle(),
         updatedAtMs: nowMs - demoState.policy.maxStaleUs / 1000 - 1,
       },
     };
     const wideConfidenceQuote: LiveQuoteMap = {
-      ada: {
+      rbtc: {
         ...stateOracle(),
-        confidence: 0.01,
+        confidence: 2_000,
       },
     };
 
@@ -53,24 +53,27 @@ describe("applyLiveQuotesToDemoState", () => {
     expect(applyLiveQuotesToDemoState(cloneState(), wideConfidenceQuote)).toEqual(cloneState());
   });
 
-  it("recomputes liquid value, stable ratio, and weights when ADA price changes", () => {
+  it("recomputes liquid value, stable ratio, and weights when RBTC price changes", () => {
     const state = applyLiveQuotesToDemoState(cloneState(), {
-      ada: {
+      rbtc: {
         ...stateOracle(),
-        price: 0.25,
-        emaPrice: 0.3,
+        price: 70_000,
+        emaPrice: 71_000,
       },
     });
 
     const riskPosition = state.positions.find((position) => position.role === "risk");
     const stablePosition = state.positions.find((position) => position.role === "stable");
+    const expectedRiskFiat = 8.25 * 70_000;
+    const expectedTotal = expectedRiskFiat + 36_000;
+    const expectedLiquid = expectedRiskFiat * (1 - demoState.policy.haircutBps / 10_000) + 36_000;
 
-    expect(riskPosition?.fiatValue).toBeCloseTo(31_250, 6);
-    expect(riskPosition?.weight).toBeCloseTo(31_250 / 68_750, 6);
-    expect(stablePosition?.weight).toBeCloseTo(37_500 / 68_750, 6);
-    expect(state.metrics.liquidValue).toBeCloseTo(68_281.25, 6);
-    expect(state.metrics.stableRatio).toBeCloseTo(37_500 / 68_281.25, 6);
-    expect(state.metrics.drawdownBps).toBe(1667);
+    expect(riskPosition?.fiatValue).toBeCloseTo(expectedRiskFiat, 6);
+    expect(riskPosition?.weight).toBeCloseTo(expectedRiskFiat / expectedTotal, 6);
+    expect(stablePosition?.weight).toBeCloseTo(36_000 / expectedTotal, 6);
+    expect(state.metrics.liquidValue).toBeCloseTo(expectedLiquid, 6);
+    expect(state.metrics.stableRatio).toBeCloseTo(36_000 / expectedLiquid, 6);
+    expect(state.metrics.drawdownBps).toBe(141);
   });
 
   it("returns guarded live reference prices by symbol", () => {
@@ -139,11 +142,11 @@ describe("applyLiveQuotesToDemoState", () => {
 
 function stateOracle() {
   return {
-    feedId: "pyth-ada-usd",
-    symbol: "ADA/USD",
-    price: 0.252,
-    emaPrice: 0.251,
-    confidence: 0.00004,
+    feedId: "pyth-rbtc-usd",
+    symbol: "RBTC/USD",
+    price: 68_000,
+    emaPrice: 68_220,
+    confidence: 48,
     updatedAtMs: nowMs - 1_000,
     publisherCount: 12,
   };

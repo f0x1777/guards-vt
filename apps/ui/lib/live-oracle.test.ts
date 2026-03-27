@@ -4,11 +4,11 @@ import { applyLiveOracleToDemoState } from "./live-oracle";
 import type { DemoState, OracleSnapshot } from "./types";
 
 const oracle: OracleSnapshot = {
-  feedId: "pyth-ada-usd",
-  symbol: "ADA/USD",
-  price: 0.25,
-  emaPrice: 0.3,
-  confidence: 0.001,
+  feedId: "pyth-rbtc-usd",
+  symbol: "RBTC/USD",
+  price: 70_000,
+  emaPrice: 71_000,
+  confidence: 48,
   updatedAtMs: Date.parse("2026-03-22T19:00:00.000Z"),
   publisherCount: 10,
 };
@@ -19,14 +19,16 @@ describe("applyLiveOracleToDemoState", () => {
 
     const riskPosition = state.positions.find((position) => position.role === "risk");
     const stablePosition = state.positions.find((position) => position.role === "stable");
+    const expectedRiskFiat = 8.25 * 70_000;
+    const expectedLiquid = expectedRiskFiat * (1 - demoState.policy.haircutBps / 10_000) + 36_000;
 
-    expect(riskPosition?.fiatValue).toBeCloseTo(31_250, 6);
-    expect(stablePosition?.fiatValue).toBe(37_500);
-    expect(state.metrics.liquidValue).toBeCloseTo(68_281.25, 6);
-    expect(state.metrics.stableRatio).toBeCloseTo(37_500 / 68_281.25, 6);
-    expect(state.metrics.drawdownBps).toBe(1667);
-    expect(riskPosition?.weight).toBeCloseTo(31_250 / 68_750, 6);
-    expect(stablePosition?.weight).toBeCloseTo(37_500 / 68_750, 6);
+    expect(riskPosition?.fiatValue).toBeCloseTo(expectedRiskFiat, 6);
+    expect(stablePosition?.fiatValue).toBe(36_000);
+    expect(state.metrics.liquidValue).toBeCloseTo(expectedLiquid, 6);
+    expect(state.metrics.stableRatio).toBeCloseTo(36_000 / expectedLiquid, 6);
+    expect(state.metrics.drawdownBps).toBe(141);
+    expect(riskPosition?.weight).toBeCloseTo(expectedRiskFiat / (expectedRiskFiat + 36_000), 6);
+    expect(stablePosition?.weight).toBeCloseTo(36_000 / (expectedRiskFiat + 36_000), 6);
   });
 
   it("preserves fallback weights when total display value is zero", () => {
@@ -55,7 +57,7 @@ describe("applyLiveOracleToDemoState", () => {
     const state = applyLiveOracleToDemoState(stateWithoutRisk, oracle);
 
     expect(state.oracle.price).toBe(oracle.price);
-    expect(state.metrics.drawdownBps).toBe(1667);
+    expect(state.metrics.drawdownBps).toBe(141);
     expect(state.metrics.oracleFreshness).toMatch(/ago$/);
   });
 });
