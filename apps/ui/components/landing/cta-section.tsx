@@ -2,6 +2,7 @@
 
 import { ArrowRight } from "lucide-react";
 import { FadeUp } from "./animations";
+import { WalletStatusChip } from "./wallet-status-chip";
 
 export function CTASection() {
   return (
@@ -34,7 +35,7 @@ export function CTASection() {
         </FadeUp>
 
         <FadeUp delay={0.3}>
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center gap-3 flex-wrap">
             <a
               href="/dashboard"
               className="inline-flex items-center gap-2 rounded-full bg-white text-[#070612] px-8 py-4 text-base font-semibold hover:bg-white/90 transition-all cursor-pointer"
@@ -42,6 +43,7 @@ export function CTASection() {
               Open Demo
               <ArrowRight className="w-4 h-4" />
             </a>
+            <WalletStatusChip />
           </div>
         </FadeUp>
       </div>

@@ -24,6 +24,7 @@ import {
   type DashboardMode,
 } from "@/components/runtime-control-panel";
 import { TreasuryActionsPanel } from "@/components/treasury-actions-panel";
+import { WalletOnboardingModal } from "@/components/wallet-onboarding-modal";
 import type { RiskLadderStep } from "@/lib/types";
 import { demoState } from "@/lib/demo-data";
 import {
@@ -32,9 +33,12 @@ import {
   type LiveQuoteMap,
 } from "@/lib/live-prices";
 import {
+  connectWallet,
+  detectWalletAvailability,
   connectPreferredWallet,
   hydrateStoredWalletSession,
   persistWalletSession,
+  type WalletConnectionOption,
   type WalletSession,
 } from "@/lib/wallet-session";
 import {
@@ -64,6 +68,8 @@ export default function Dashboard() {
   const [activeProfileId, setActiveProfileId] = useState(companyVaultProfiles[0]?.id ?? "");
   const [walletSession, setWalletSession] = useState<WalletSession | null>(null);
   const [connectingWallet, setConnectingWallet] = useState(false);
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
+  const [evmDetected, setEvmDetected] = useState(false);
   const [treasuryActionMessage, setTreasuryActionMessage] = useState<string | null>(null);
   const [liveQuotes, setLiveQuotes] = useState<LiveQuoteMap | null>(null);
   const [liveQuotesError, setLiveQuotesError] = useState<string | null>(null);
@@ -75,6 +81,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     setWalletSession(hydrateStoredWalletSession());
+    setEvmDetected(detectWalletAvailability().evm);
     setWalletSessionHydrated(true);
   }, []);
 
@@ -188,14 +195,23 @@ export default function Dashboard() {
   const ladderStep: RiskLadderStep = data.vault.ladderStep ?? data.vault.stage;
 
   async function handleConnectWallet() {
+    setEvmDetected(detectWalletAvailability().evm);
+    setWalletModalOpen(true);
+  }
+
+  async function handleSelectWallet(option: WalletConnectionOption) {
     if (connectingWallet) {
       return;
     }
 
     setConnectingWallet(true);
     try {
-      const session = await connectPreferredWallet();
+      const session =
+        option === "beexo" || option === "browser_evm" || option === "mock"
+          ? await connectWallet(option)
+          : await connectPreferredWallet();
       setWalletSession(session);
+      setWalletModalOpen(false);
     } finally {
       setConnectingWallet(false);
     }
@@ -218,6 +234,13 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen flex relative">
       <PreprodWarningModal />
+      <WalletOnboardingModal
+        open={walletModalOpen}
+        connecting={connectingWallet}
+        evmDetected={evmDetected}
+        onClose={() => setWalletModalOpen(false)}
+        onSelect={handleSelectWallet}
+      />
       {/* Ambient background gradient */}
       <div
         className="fixed inset-0 pointer-events-none z-0"

@@ -67,9 +67,31 @@ export async function connectBeexoOrEvmWalletWithProvider(
 
   return {
     address,
-    label: provider.isMetaMask ? "EVM Wallet" : "Beexo Connect",
+    label: provider.isMetaMask
+      ? "EVM Wallet"
+      : provider.isXOConnect
+        ? "Beexo Connect"
+        : "Beexo / EVM Wallet",
     chainId,
   };
+}
+
+export async function connectBeexoWallet(): Promise<BeexoConnectionResult | null> {
+  const provider = getBeexoProvider();
+  if (!provider) {
+    return null;
+  }
+
+  return connectBeexoOrEvmWalletWithProvider(provider);
+}
+
+export async function connectInjectedEvmWallet(): Promise<BeexoConnectionResult | null> {
+  const provider = getEthereumProvider();
+  if (!provider) {
+    return null;
+  }
+
+  return connectBeexoOrEvmWalletWithProvider(provider);
 }
 
 export async function connectBeexoOrEvmWallet(): Promise<BeexoConnectionResult | null> {

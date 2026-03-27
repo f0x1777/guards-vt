@@ -31,7 +31,7 @@ function chainLabel(_chain: ChainId): string {
 }
 
 function connectLabel(_chain: ChainId): string {
-  return "Connect Beexo / Rootstock";
+  return "Connect Wallet";
 }
 
 export function Topbar({
