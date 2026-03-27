@@ -17,8 +17,8 @@ contract GuardedTreasuryVault {
     event AssetAllowed(address indexed asset, bool allowed);
     event DestinationAllowed(address indexed destination, bool allowed);
     event TransferLimitSet(address indexed asset, uint256 amount);
-    event TreasuryTransfer(address indexed asset, address indexed destination, uint256 amount, bytes32 reference);
-    event TreasuryWithdrawal(address indexed asset, address indexed destination, uint256 amount, bytes32 reference);
+    event TreasuryTransfer(address indexed asset, address indexed destination, uint256 amount, bytes32 referenceId);
+    event TreasuryWithdrawal(address indexed asset, address indexed destination, uint256 amount, bytes32 referenceId);
 
     error NotGovernance();
     error NotAuthorized();
@@ -88,23 +88,25 @@ contract GuardedTreasuryVault {
         emit TransferLimitSet(asset, amount);
     }
 
-    function executeTransfer(address asset, address destination, uint256 amount, bytes32 reference)
+    function executeTransfer(address asset, address destination, uint256 amount, bytes32 referenceId)
         external
+        view
         onlyAuthorized
         whenNotPaused
     {
         _validateOperation(asset, destination, amount);
-        reference;
+        referenceId;
         revert ExecutionNotImplemented();
     }
 
-    function executeWithdrawal(address asset, address destination, uint256 amount, bytes32 reference)
+    function executeWithdrawal(address asset, address destination, uint256 amount, bytes32 referenceId)
         external
+        view
         onlyGovernance
         whenNotPaused
     {
         _validateOperation(asset, destination, amount);
-        reference;
+        referenceId;
         revert ExecutionNotImplemented();
     }
 

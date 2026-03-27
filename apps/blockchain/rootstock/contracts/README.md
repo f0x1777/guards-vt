@@ -27,7 +27,11 @@ The recommended stack for this repo is `Foundry`, because it is fast to scaffold
 
 ## Next steps
 
-1. Install Foundry in the actual dev environment
-2. Add RPC and deployer env vars for Rootstock testnet
-3. Wire real asset movement and vault custody semantics
-4. Deploy the first contract to Rootstock testnet
+1. Add RPC and deployer env vars for Rootstock testnet
+2. Wire real asset movement and vault custody semantics
+3. Deploy the first contract to Rootstock testnet
+
+## Validation status
+
+- `forge test` passes locally against the current scaffold
+- execution paths remain intentionally fail-closed until real vault custody is wired
