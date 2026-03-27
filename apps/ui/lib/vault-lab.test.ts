@@ -9,7 +9,7 @@ import {
 } from "./vault-lab";
 
 describe("vault lab helpers", () => {
-  it("computes ADA target from a reference asset price", () => {
+  it("computes the risk-asset target from a reference asset price", () => {
     expect(computeReferenceTargetAda(25, 3000, 0.5)).toBe(150000);
     expect(computeReferenceTargetAda(0, 3000, 0.5)).toBe(0);
   });
