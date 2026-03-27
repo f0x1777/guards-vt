@@ -136,6 +136,16 @@ cp .env.example .env
 See:
 - [docs/ROOTSTOCK_ADAPTATION_PLAN.md](./docs/ROOTSTOCK_ADAPTATION_PLAN.md)
 - [docs/ROOTSTOCK_IMPLEMENTATION_TRACKER.md](./docs/ROOTSTOCK_IMPLEMENTATION_TRACKER.md)
+- [docs/ROOTSTOCK_DEPLOY_RUNBOOK.md](./docs/ROOTSTOCK_DEPLOY_RUNBOOK.md)
+
+## Rootstock Deploy Surface
+
+Once `.env` is filled, the first contract can be validated and deployed with:
+
+```bash
+pnpm rootstock:contract:doctor
+pnpm rootstock:contract:deploy:testnet
+```
 
 ## Notes
 

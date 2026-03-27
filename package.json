@@ -13,7 +13,9 @@
     "preview": "pnpm build:ui && pnpm --dir apps/ui start",
     "preview:legacy": "tsx apps/backend/src/preview-server.ts",
     "dev:ui": "pnpm --dir apps/ui dev",
-    "build:ui": "pnpm --dir apps/ui build"
+    "build:ui": "pnpm --dir apps/ui build",
+    "rootstock:contract:doctor": "bash apps/blockchain/rootstock/contracts/scripts/doctor-rootstock-testnet.sh",
+    "rootstock:contract:deploy:testnet": "bash apps/blockchain/rootstock/contracts/scripts/deploy-rootstock-testnet.sh"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
