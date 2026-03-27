@@ -1,3 +1,5 @@
+import { connectBeexoOrEvmWallet } from "./beexo-connect";
+
 export type WalletSessionChain = "evm" | "svm" | "cardano";
 export type WalletSessionKind = "mock" | "beexo_eip1193" | "eip1193" | "cip30" | "wallet_standard";
 
@@ -105,7 +107,13 @@ async function connectEvmWallet(): Promise<WalletSession | null> {
     if (!provider?.request) return null;
     try {
       const accounts = await provider.request({ method: "eth_requestAccounts" });
-      const address = Array.isArray(accounts) && typeof accounts[0] === "string" && accounts[0].length > 0 ? accounts[0] : "0x-rootstock-wallet";
+      const address =
+        Array.isArray(accounts) &&
+        typeof accounts[0] === "string" &&
+        accounts[0].length > 0
+          ? accounts[0]
+          : null;
+      if (address === null) return null;
       return { id: `eip1193-${address.toLowerCase()}`, chain: "evm", kind: "eip1193", label: provider.isMetaMask ? "EVM Wallet" : "Beexo / EVM Wallet", address, connectedAtMs: Date.now() };
     } catch { return null; }
   }

@@ -112,6 +112,6 @@ contract GuardedTreasuryVault {
         if (!allowedAssets[asset]) revert AssetNotAllowed();
         if (!allowedDestinations[destination]) revert DestinationNotAllowed();
         uint256 limit = maxTransferAmount[asset];
-        if (limit != 0 && amount > limit) revert TransferLimitExceeded();
+        if (limit == 0 || amount > limit) revert TransferLimitExceeded();
     }
 }
