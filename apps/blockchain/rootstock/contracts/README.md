@@ -25,6 +25,8 @@ Current implementation note:
 
 The recommended stack for this repo is `Foundry`, because it is fast to scaffold, test, and deploy for an EVM-compatible target like Rootstock.
 
+The repository vendors only the minimal `forge-std` source and license files needed to compile and run the local test suite. Generated artifacts stay ignored under `cache/`, `out/`, and `broadcast/`.
+
 ## Next steps
 
 1. Add RPC and deployer env vars for Rootstock testnet

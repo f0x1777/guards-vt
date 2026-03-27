@@ -88,25 +88,21 @@ contract GuardedTreasuryVault {
         emit TransferLimitSet(asset, amount);
     }
 
-    function executeTransfer(address asset, address destination, uint256 amount, bytes32 referenceId)
+    function executeTransfer(address asset, address destination, uint256 amount, bytes32)
         external
-        view
         onlyAuthorized
         whenNotPaused
     {
         _validateOperation(asset, destination, amount);
-        referenceId;
         revert ExecutionNotImplemented();
     }
 
-    function executeWithdrawal(address asset, address destination, uint256 amount, bytes32 referenceId)
+    function executeWithdrawal(address asset, address destination, uint256 amount, bytes32)
         external
-        view
         onlyGovernance
         whenNotPaused
     {
         _validateOperation(asset, destination, amount);
-        referenceId;
         revert ExecutionNotImplemented();
     }
 

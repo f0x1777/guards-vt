@@ -21,6 +21,7 @@ This is the canonical tracker for the Rootstock / Beexo derivation of Guards.
 - [x] Add an initial Foundry scaffold for Rootstock
 - [x] Add guardrail-focused Foundry tests for the first contract scaffold
 - [x] Install Foundry in the real dev environment and validate the scaffold
+- [x] Keep the Foundry vendor footprint minimal and ignore generated artifacts
 - [ ] Deploy at least one contract on Rootstock testnet
 - [ ] Document deployed addresses and networks
 
