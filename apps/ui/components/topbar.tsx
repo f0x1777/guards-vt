@@ -27,27 +27,27 @@ interface TopbarProps {
 }
 
 function chainLabel(chain: ChainId): string {
-  if (chain === "cardano") {
-    return runtimeAvailability.cardanoNetworkLabel;
+  if (chain === "evm") {
+    return runtimeAvailability.rootstockNetworkLabel;
   }
 
   if (chain === "svm") {
     return "Solana / SVM";
   }
 
-  return "Ethereum / EVM";
+  return "Cardano";
 }
 
 function connectLabel(chain: ChainId): string {
-  if (chain === "cardano") {
-    return "Connect Cardano / Demo";
+  if (chain === "evm") {
+    return "Connect Rootstock / Demo";
   }
 
   if (chain === "svm") {
     return "Connect SVM / Demo";
   }
 
-  return "Connect Wallet / Demo";
+  return "Connect Cardano / Demo";
 }
 
 export function Topbar({
@@ -111,7 +111,7 @@ export function Topbar({
               className="chip"
               style={{ background: "rgba(240,191,95,0.12)", color: "#f0bf5f" }}
             >
-              Mainnet unavailable
+              Mainnet pending
             </span>
           )}
           <span
@@ -129,7 +129,7 @@ export function Topbar({
               <circle cx="6" cy="6" r="5" />
               <path d="M6 3v3l2 1" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            Pyth: {liveQuotesEnabled ? oracleFreshness : "demo fallback"}
+            Market data: {liveQuotesEnabled ? oracleFreshness : "demo fallback"}
           </span>
           {liveQuotesError && (
             <span

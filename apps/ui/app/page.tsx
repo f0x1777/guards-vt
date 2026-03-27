@@ -2,7 +2,7 @@ import { Navbar } from "@/components/landing/navbar";
 import { Hero } from "@/components/landing/hero";
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { MultichainSection } from "@/components/landing/multichain-section";
-import { PythBanner } from "@/components/landing/pyth-banner";
+import { TrackBanner } from "@/components/landing/pyth-banner";
 import { RiskLadderSection } from "@/components/landing/risk-ladder-section";
 import { CTASection } from "@/components/landing/cta-section";
 import { Footer } from "@/components/landing/footer";
@@ -12,7 +12,7 @@ export default function LandingPage() {
     <main className="bg-[#070612]">
       <Navbar />
       <Hero />
-      <PythBanner />
+      <TrackBanner />
       <HowItWorks />
       <RiskLadderSection />
       <MultichainSection />

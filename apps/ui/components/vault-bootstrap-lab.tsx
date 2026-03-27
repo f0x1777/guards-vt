@@ -26,9 +26,9 @@ const custodyOptions: Array<{
 }> = [
   {
     id: "native",
-    label: "Cardano Native",
-    description: "Governance and keeper rails managed directly on Cardano.",
-    readiness: "Requires CIP-30 / signer wiring",
+    label: "Rootstock Native",
+    description: "Governance and operator rails managed directly on Rootstock.",
+    readiness: "Requires EVM wallet / signer wiring",
   },
   {
     id: "squads",
@@ -83,7 +83,7 @@ export function VaultBootstrapLab({
       <div className="border-b border-line px-5 py-4">
         <h3 className="text-sm font-semibold text-text">Vault Bootstrap Lab</h3>
         <p className="mt-1 text-xs text-text-muted">
-          Prepare a preprod vault draft, choose custody rails, and generate the
+          Prepare a Rootstock vault draft, choose custody rails, and generate the
           bootstrap envelope before wiring the real transaction builder.
         </p>
       </div>
@@ -116,8 +116,8 @@ export function VaultBootstrapLab({
             </Field>
             <Field label="Vault chain">
               <div className={`${inputClassName} flex items-center justify-between text-text-secondary`}>
-                <span>{runtimeAvailability.cardanoNetworkLabel}</span>
-                <span className="chip-accent">Cardano</span>
+                <span>{runtimeAvailability.rootstockNetworkLabel}</span>
+                <span className="chip-accent">Rootstock</span>
               </div>
             </Field>
             <Field label="Approved route id">
@@ -322,7 +322,7 @@ export function VaultBootstrapLab({
             <div className="space-y-3">
               <label className="flex items-center justify-between rounded-xl border border-line px-3 py-2">
                 <span className="text-sm text-text-secondary">
-                  Keep ADA exposure linked to a reference asset
+                  Keep primary treasury exposure linked to a reference asset
                 </span>
                 <input
                   type="checkbox"
@@ -386,17 +386,17 @@ export function VaultBootstrapLab({
                   />
                 </Field>
                 <div className="space-y-2">
-                  <span className="eyebrow">Target ADA at current price</span>
+                  <span className="eyebrow">Target RBTC at current price</span>
                   <div className="rounded-2xl border border-line bg-panel px-4 py-3">
                     <div className="text-lg font-semibold text-text">
                       {draft.useReferenceTarget ? targetAda.toLocaleString() : "Disabled"}
                     </div>
                     <p className="mt-1 text-xs text-text-muted">
-                      Uses {draft.referenceSymbol} (${(currentReferencePrice ?? draft.referencePrice).toFixed(3)}) and ADA (${currentAdaPrice.toFixed(3)}).
+                      Uses {draft.referenceSymbol} (${(currentReferencePrice ?? draft.referencePrice).toFixed(3)}) and RBTC (${currentAdaPrice.toFixed(3)}).
                     </p>
                     {liveReferenceAvailable && (
                       <p className="mt-1 text-xs text-accent">
-                        Reference price is currently synced from the live Pyth quote.
+                        Reference price is currently synced from the live market quote.
                       </p>
                     )}
                   </div>
@@ -408,9 +408,9 @@ export function VaultBootstrapLab({
           <div className="rounded-2xl border border-line bg-bg-soft p-4 text-sm text-text-secondary">
             <p className="font-semibold text-text">Current UI status</p>
             <ul className="mt-3 space-y-2">
-              <li>- Wallet connect is not wired yet. Native, Squads, and Safe are modeled here for bootstrap planning only.</li>
+              <li>- Wallet connect is still in adaptation. Rootstock native, Squads, and Safe are modeled here for bootstrap planning.</li>
               <li>- Policy editing is browser-side and feeds the simulator below.</li>
-              <li>- Create-vault from frontend still needs CIP-30 or signer integration plus a real bootstrap tx builder.</li>
+              <li>- Create-vault from frontend still needs EVM signer integration plus a real bootstrap tx builder.</li>
               <li>- {runtimeAvailability.warningBody}</li>
             </ul>
           </div>

@@ -10,7 +10,7 @@ This repo can be deployed to `Vercel` for the operator UI in `apps/ui`.
 
 ## Why the Vercel config lives in `apps/ui`
 
-The deploy target is the Next app only. The rest of the monorepo contains backend simulation, Cardano off-chain tooling, and contract scaffolding that do not belong in the browser deployment.
+The deploy target is the Next app only. The rest of the monorepo contains backend simulation and chain-specific scaffolding that do not belong in the browser deployment.
 
 `apps/ui/vercel.json` assumes the Vercel project uses:
 
@@ -42,15 +42,15 @@ This Vercel deployment is for the frontend only:
 
 It does **not** deploy:
 
-- Cardano keepers
-- Pyth live collector jobs
-- DexHunter execution services
+- backend keepers or workers
+- live market-data collectors
+- Rootstock execution services
 - SQLite or any deployable backend storage
 
 Those still need a separate runtime such as `Railway`, `Fly.io`, `Render`, or equivalent.
 
 ## Environment variables
 
-The current UI does not require wallet or oracle secrets to render. You can deploy the shell without adding the Cardano/Pyth backend secrets to Vercel.
+The current UI does not require signing keys or chain secrets to render. You can deploy the shell without adding Rootstock or Beexo backend secrets to Vercel.
 
 If future UI releases call live backend APIs, add only the public frontend variables there and keep signing keys/provider secrets in the backend runtime.

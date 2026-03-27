@@ -1,9 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { FadeUp } from "./animations";
 
-export function PythBanner() {
+export function TrackBanner() {
   return (
     <section className="relative overflow-hidden bg-[#070612] py-16 md:py-20">
       <div
@@ -24,30 +23,25 @@ export function PythBanner() {
       <div className="relative mx-auto flex max-w-7xl flex-col items-center gap-6 px-6 text-center lg:px-12">
         <FadeUp>
           <p className="font-mono text-xs font-medium uppercase tracking-[0.34em] text-white/35 md:text-sm">
-            Powered by
+            Adapting for
           </p>
         </FadeUp>
 
         <FadeUp delay={0.08}>
-          <motion.img
-            src="/pyth-logo.png"
-            alt="Pyth Network"
-            width="320"
-            height="96"
-            className="h-12 w-auto brightness-0 invert md:h-16"
-            initial={{ opacity: 0.82, scale: 0.98 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-            loading="lazy"
-            decoding="async"
-          />
+          <div className="flex flex-wrap items-center justify-center gap-3 text-white">
+            <span className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm font-semibold tracking-wide">
+              Rootstock Track
+            </span>
+            <span className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm font-semibold tracking-wide text-[#7c6ff7]">
+              Beexo Connect
+            </span>
+          </div>
         </FadeUp>
 
         <FadeUp delay={0.16}>
-          <p className="max-w-xl text-sm leading-relaxed text-white/38 md:text-base">
-            Real-time oracle data behind each risk signal, threshold check, and
-            bounded execution decision.
+          <p className="max-w-2xl text-sm leading-relaxed text-white/38 md:text-base">
+            Same treasury-control product direction, now reframed for Bitcoin DeFi on Rootstock and frictionless
+            wallet onboarding for LATAM users through Beexo Connect.
           </p>
         </FadeUp>
       </div>

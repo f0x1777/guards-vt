@@ -10,7 +10,7 @@ import {
   type WalletSession,
 } from "@/lib/wallet-session";
 
-export type DashboardMode = "mock" | "preprod_snapshot";
+export type DashboardMode = "mock" | "testnet_snapshot";
 
 interface RuntimeControlPanelProps {
   mode: DashboardMode;
@@ -29,7 +29,7 @@ export function RuntimeControlPanel({
   walletSession,
   setWalletSession,
 }: RuntimeControlPanelProps) {
-  const [cardanoDetected, setCardanoDetected] = useState(false);
+  const [evmDetected, setEvmDetected] = useState(false);
   const [svmDetected, setSvmDetected] = useState(false);
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export function RuntimeControlPanel({
     }
 
     const availability = detectWalletAvailability();
-    setCardanoDetected(availability.cardano);
+    setEvmDetected(availability.evm);
     setSvmDetected(availability.svm);
   }, []);
 
@@ -49,8 +49,8 @@ export function RuntimeControlPanel({
           <div>
             <h3 className="text-sm font-semibold text-text">Runtime Control</h3>
             <p className="mt-1 text-xs text-text-muted">
-              Toggle between mock replay and the current preprod dashboard snapshot.
-              Use mock wallet sessions now; real CIP-30 and SVM wallet adapters are next.
+              Toggle between mock replay and the current Rootstock-oriented dashboard snapshot.
+              Use demo wallets now; Beexo and broader EVM wallet wiring come next.
             </p>
           </div>
           <span className="chip-accent">Demo-first</span>
@@ -79,16 +79,16 @@ export function RuntimeControlPanel({
             </button>
             <button
               type="button"
-              onClick={() => setMode("preprod_snapshot")}
+              onClick={() => setMode("testnet_snapshot")}
               className={`rounded-2xl border p-4 text-left transition ${
-                mode === "preprod_snapshot"
+                mode === "testnet_snapshot"
                   ? "border-accent bg-accent/8"
                   : "border-line bg-bg-soft hover:border-accent/25"
               }`}
             >
-              <p className="text-sm font-semibold text-text">Preprod snapshot</p>
+              <p className="text-sm font-semibold text-text">Rootstock snapshot</p>
               <p className="mt-2 text-xs leading-relaxed text-text-muted">
-                Use the current preprod-oriented operator view and policy labs without the historical backtest loop.
+                Use the current Rootstock-oriented operator view and policy labs without the historical backtest loop.
               </p>
             </button>
           </div>
@@ -128,11 +128,11 @@ export function RuntimeControlPanel({
           <div className="grid gap-3 md:grid-cols-3">
             <button
               type="button"
-              onClick={() => setWalletSession(createMockWalletSession("cardano"))}
+              onClick={() => setWalletSession(createMockWalletSession("evm"))}
               className="rounded-2xl border border-line bg-bg-soft p-4 text-left transition hover:border-accent/25"
             >
-              <p className="text-sm font-semibold text-text">Mock Cardano</p>
-              <p className="mt-2 text-xs text-text-muted">Instant demo session for CIP-30 style flows and preprod bootstrap.</p>
+              <p className="text-sm font-semibold text-text">Mock Rootstock</p>
+              <p className="mt-2 text-xs text-text-muted">Instant demo session for Rootstock / Beexo-style treasury flows.</p>
             </button>
             <button
               type="button"
@@ -145,14 +145,14 @@ export function RuntimeControlPanel({
             <div className="rounded-2xl border border-line bg-bg-soft p-4 text-left">
               <p className="text-sm font-semibold text-text">Real connectors</p>
               <div className="mt-2 space-y-1 text-xs text-text-muted">
-                <p>CIP-30 detected: {cardanoDetected ? "yes" : "no"}</p>
+                <p>EVM provider detected: {evmDetected ? "yes" : "no"}</p>
                 <p>SVM provider detected: {svmDetected ? "yes" : "no"}</p>
                 <p>Top-right connect uses real providers when available, then falls back to mock.</p>
               </div>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-line bg-bg-soft px-4 py-3 text-sm text-text-secondary">
-            <span className="chip">{walletSession ? walletSession.label : "No wallet connected"}</span>
+            <span className="chip">{walletSession ? walletSession.label : "No treasury wallet connected"}</span>
             {walletSession && (
               <>
                 <span className="font-mono text-xs text-text">{shortWalletAddress(walletSession.address)}</span>

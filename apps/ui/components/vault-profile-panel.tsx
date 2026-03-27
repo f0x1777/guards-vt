@@ -14,21 +14,21 @@ interface VaultProfilePanelProps {
 }
 
 const custodyLabels: Record<CustodyMode, string> = {
-  native: "Cardano native",
+  native: "Rootstock native",
   squads: "Squads compatible",
   safe: "Safe compatible",
 };
 
 function chainLabel(chain: ChainId): string {
-  if (chain === "cardano") {
-    return runtimeAvailability.cardanoNetworkLabel;
+  if (chain === "evm") {
+    return runtimeAvailability.rootstockNetworkLabel;
   }
 
   if (chain === "svm") {
     return "Solana / SVM";
   }
 
-  return "Ethereum / EVM";
+  return "Cardano";
 }
 
 function ProfileRow({

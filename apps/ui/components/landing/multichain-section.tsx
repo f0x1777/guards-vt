@@ -5,7 +5,7 @@ import { FadeUp } from "./animations";
 
 const chains = [
   {
-    name: "Cardano",
+    name: "Rootstock",
     src: "/chain-cardano.png",
     sizeClass: "h-12 md:h-14",
     width: 200,

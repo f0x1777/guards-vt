@@ -128,7 +128,7 @@ export function Sidebar({
   const resolvedMeta =
     mode === "mock"
       ? "interactive replay · strategy sandbox"
-      : `${chain} · ${stageAppearance.label}`;
+      : `${chain === "evm" ? "rootstock" : chain} · ${stageAppearance.label}`;
 
   return (
     <motion.aside
@@ -182,7 +182,7 @@ export function Sidebar({
               resolvedMeta
             ) : (
               <>
-                {chain} &middot;{" "}
+                {chain === "evm" ? "rootstock" : chain} &middot;{" "}
                 <span className={stageAppearance.textClass}>{stageAppearance.label}</span>
               </>
             )}
@@ -228,7 +228,7 @@ export function Sidebar({
             <span className="animate-ping motion-reduce:animate-none absolute inline-flex h-full w-full rounded-full bg-green opacity-50" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-green" />
           </span>
-          <span className="font-mono">{runtimeAvailability.cardanoNetworkLabel} only</span>
+          <span className="font-mono">{runtimeAvailability.rootstockNetworkLabel} only</span>
         </div>
         <p className="text-[0.58rem] text-text-muted/60 font-mono">
           guards.one v0.2.0 · {runtimeAvailability.mainnetAvailable ? "mainnet enabled" : "mainnet disabled"}

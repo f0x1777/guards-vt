@@ -16,7 +16,7 @@ import { AuditLog } from "@/components/audit-log";
 import {
   PreprodWarningBanner,
   PreprodWarningModal,
-} from "@/components/preprod-warning";
+} from "@/components/testnet-warning";
 import { VaultBootstrapLab } from "@/components/vault-bootstrap-lab";
 import { ScenarioLab } from "@/components/scenario-lab";
 import { HistoricalStrategyLab } from "@/components/historical-strategy-lab";
@@ -193,18 +193,14 @@ export default function Dashboard() {
       return;
     }
 
-    if (data.vault.chain === "evm") {
-      if (typeof window !== "undefined") {
-        window.alert(
-          "EVM wallet connect is not enabled in this UI yet. Use Cardano or SVM mode for the current demo.",
-        );
-      }
-      return;
-    }
-
     setConnectingWallet(true);
     try {
-      const chain = data.vault.chain === "svm" ? "svm" : "cardano";
+      const chain =
+        data.vault.chain === "svm"
+          ? "svm"
+          : data.vault.chain === "evm"
+            ? "evm"
+            : "cardano";
       const session = await connectPreferredWallet(chain);
       setWalletSession(session);
     } finally {
