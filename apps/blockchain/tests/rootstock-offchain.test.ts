@@ -76,6 +76,75 @@ describe("rootstock protocol adapters", () => {
     expect(() => moneyOnChainAdapter.prepare(invalidSlippage)).toThrow(/slippageBps/i);
   });
 
+  it("fails closed on non-Rootstock intents and missing vault metadata", () => {
+    expect(() =>
+      moneyOnChainAdapter.prepare(
+        buildIntent({
+          chainId: 1,
+        }),
+      ),
+    ).toThrow(/requires Rootstock testnet chainId/i);
+
+    expect(() =>
+      moneyOnChainAdapter.prepare(
+        buildIntent({
+          vaultId: "   ",
+        }),
+      ),
+    ).toThrow(/requires a vaultId/i);
+
+    expect(() =>
+      moneyOnChainAdapter.prepare(
+        buildIntent({
+          companyId: "   ",
+        }),
+      ),
+    ).toThrow(/requires a companyId/i);
+  });
+
+  it("fails closed on invalid token pair semantics", () => {
+    expect(() =>
+      moneyOnChainAdapter.prepare(
+        buildIntent({
+          route: {
+            ...buildIntent().route,
+            buyToken: "",
+          },
+        }),
+      ),
+    ).toThrow(/requires a buyToken/i);
+
+    expect(() =>
+      moneyOnChainAdapter.prepare(
+        buildIntent({
+          route: {
+            ...buildIntent().route,
+            sellToken: "DOC",
+            buyToken: "DOC",
+          },
+        }),
+      ),
+    ).toThrow(/distinct sellToken and buyToken/i);
+  });
+
+  it("fails closed on invalid amount fields", () => {
+    expect(() =>
+      moneyOnChainAdapter.prepare(
+        buildIntent({
+          amount: "0",
+        }),
+      ),
+    ).toThrow(/positive integer amount/i);
+
+    expect(() =>
+      moneyOnChainAdapter.prepare(
+        buildIntent({
+          minReceive: "0",
+        }),
+      ),
+    ).toThrow(/minReceive/i);
+  });
+
   it("prepares executable Money on Chain mint calls for RBTC -> DOC", () => {
     const intent = buildIntent();
     const result = moneyOnChainAdapter.prepare(intent);
