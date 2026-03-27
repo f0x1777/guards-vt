@@ -97,6 +97,31 @@ export default function Dashboard() {
   }, [walletSession, walletSessionHydrated]);
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const requestedSection = params.get("section");
+    const requestedEntry = params.get("entry");
+
+    if (requestedSection) {
+      setActiveSection(requestedSection);
+    }
+
+    if (requestedEntry === "mock") {
+      setMode("mock");
+    }
+
+    if (requestedEntry === "connect") {
+      setMode("testnet_snapshot");
+      if (!walletSession) {
+        setWalletModalOpen(true);
+      }
+    }
+  }, [walletSession]);
+
+  useEffect(() => {
     if (!liveQuotesPollingEnabled) {
       return;
     }
@@ -464,15 +489,13 @@ export default function Dashboard() {
           {/* Execution */}
           {activeSection === "admin" && (
             <motion.section key="admin" {...sectionTransition} className="space-y-6 mb-8">
-              <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-                <VaultProfilePanel
-                  draft={bootstrapDraft}
-                  chain={data.vault.chain}
-                  walletSession={walletSession}
-                  activeProfile={activeProfile}
-                />
-                <VaultAdminPanel profile={activeProfile} />
-              </div>
+              <VaultProfilePanel
+                draft={bootstrapDraft}
+                chain={data.vault.chain}
+                walletSession={walletSession}
+                activeProfile={activeProfile}
+              />
+              <VaultAdminPanel profile={activeProfile} />
             </motion.section>
           )}
 
