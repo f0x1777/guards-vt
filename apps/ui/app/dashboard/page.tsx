@@ -23,7 +23,10 @@ import {
   RuntimeControlPanel,
   type DashboardMode,
 } from "@/components/runtime-control-panel";
-import { TreasuryActionsPanel } from "@/components/treasury-actions-panel";
+import {
+  TreasuryActionsPanel,
+  type TreasuryActionKind,
+} from "@/components/treasury-actions-panel";
 import { VaultAdminPanel } from "@/components/vault-admin-panel";
 import { WalletOnboardingModal } from "@/components/wallet-onboarding-modal";
 import type { RiskLadderStep } from "@/lib/types";
@@ -53,7 +56,6 @@ import {
   applyProfileToDraft,
   companyVaultProfiles,
 } from "@/lib/company-profiles";
-import { type TreasuryActionKind } from "@/components/treasury-actions-panel";
 
 const sectionTransition = {
   initial: { opacity: 0, y: 20 },

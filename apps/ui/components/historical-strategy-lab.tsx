@@ -105,7 +105,7 @@ export function HistoricalStrategyLab({ draft, dataset }: HistoricalStrategyLabP
   const appearance = getStageAppearance(activePoint?.stage ?? "normal");
 
   useEffect(() => {
-    if (!autoplay || typeof window === "undefined") {
+    if (!autoplay || typeof window === "undefined" || result.points.length === 0) {
       return undefined;
     }
 
@@ -114,6 +114,12 @@ export function HistoricalStrategyLab({ draft, dataset }: HistoricalStrategyLabP
     }, 220);
 
     return () => window.clearInterval(timer);
+  }, [autoplay, result.points.length]);
+
+  useEffect(() => {
+    if (result.points.length === 0 && autoplay) {
+      setAutoplay(false);
+    }
   }, [autoplay, result.points.length]);
 
   if (!activePoint) {
