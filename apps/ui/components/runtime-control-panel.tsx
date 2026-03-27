@@ -136,8 +136,8 @@ export function RuntimeControlPanel({
               <p className="text-sm font-semibold text-text">Beexo / EVM connector</p>
               <div className="mt-2 space-y-1 text-xs text-text-muted">
                 <p>EVM provider detected: {evmDetected ? "yes" : "no"}</p>
-                <p>Top-right connect uses Beexo or any EIP-1193 wallet on Rootstock testnet.</p>
-                <p>If no provider is available, the dashboard falls back to the demo wallet.</p>
+                <p>Top-right connect opens a wallet selector for Beexo, existing EIP-1193 wallets, or the demo wallet.</p>
+                <p>If no provider is available, you can still run the full product flow in demo mode.</p>
               </div>
             </div>
           </div>

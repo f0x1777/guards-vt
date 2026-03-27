@@ -1,7 +1,11 @@
-import { connectBeexoOrEvmWallet } from "./beexo-connect";
+import {
+  connectBeexoWallet,
+  connectInjectedEvmWallet,
+} from "./beexo-connect";
 
 export type WalletSessionChain = "evm";
 export type WalletSessionKind = "mock" | "beexo_eip1193" | "eip1193";
+export type WalletConnectionOption = "beexo" | "browser_evm" | "mock";
 
 export interface WalletSession {
   id: string;
@@ -22,6 +26,7 @@ interface EvmProvider {
 }
 
 interface WalletAvailability {
+  beexo: boolean;
   evm: boolean;
 }
 
@@ -110,26 +115,37 @@ export function persistWalletSession(session: WalletSession | null): void {
 
 export function detectWalletAvailability(): WalletAvailability {
   return {
+    beexo: typeof window !== "undefined",
     evm: Boolean(getEvmProvider()),
   };
 }
 
-async function connectEvmWallet(): Promise<WalletSession | null> {
-  try {
-    const result = await connectBeexoOrEvmWallet();
-    if (!result) {
-      return null;
-    }
+function buildEvmWalletSession(
+  address: string,
+  kind: WalletSessionKind,
+  label: string,
+): WalletSession {
+  return {
+    id: `${kind}-${address.toLowerCase()}`,
+    chain: "evm",
+    kind,
+    label,
+    address,
+    connectedAtMs: Date.now(),
+  };
+}
 
-    return {
-      id: `eip1193-${result.address.toLowerCase()}`,
-      chain: "evm",
-      kind: "beexo_eip1193",
-      label: result.label,
-      address: result.address,
-      connectedAtMs: Date.now(),
-    };
-  } catch {
+async function connectBeexoWalletSession(): Promise<WalletSession | null> {
+  const result = await connectBeexoWallet();
+  if (!result) {
+    return null;
+  }
+
+  return buildEvmWalletSession(result.address, "beexo_eip1193", result.label);
+}
+
+async function connectInjectedEvmWalletSession(): Promise<WalletSession | null> {
+  try {
     const provider = getEvmProvider();
     if (!provider?.request) {
       return null;
@@ -147,20 +163,35 @@ async function connectEvmWallet(): Promise<WalletSession | null> {
         return null;
       }
 
-      return {
-        id: `eip1193-${address.toLowerCase()}`,
-        chain: "evm",
-        kind: "eip1193",
-        label: provider.isMetaMask ? "Rootstock EVM Wallet" : "Beexo / EVM Wallet",
+      return buildEvmWalletSession(
         address,
-        connectedAtMs: Date.now(),
-      };
+        "eip1193",
+        provider.isMetaMask ? "Rootstock EVM Wallet" : "Beexo / EVM Wallet",
+      );
     } catch {
       return null;
     }
+  } catch {
+    return null;
   }
 }
 
+export async function connectWallet(option: WalletConnectionOption): Promise<WalletSession> {
+  if (option === "mock") {
+    return createMockWalletSession();
+  }
+
+  if (option === "beexo") {
+    return (await connectBeexoWalletSession()) ?? createMockWalletSession();
+  }
+
+  return (await connectInjectedEvmWalletSession()) ?? createMockWalletSession();
+}
+
 export async function connectPreferredWallet(): Promise<WalletSession> {
-  return (await connectEvmWallet()) ?? createMockWalletSession();
+  return (
+    (await connectBeexoWalletSession()) ??
+    (await connectInjectedEvmWalletSession()) ??
+    createMockWalletSession()
+  );
 }
