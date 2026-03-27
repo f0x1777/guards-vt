@@ -40,7 +40,7 @@ function chainLabel(chain: ChainId): string {
 
 function connectLabel(chain: ChainId): string {
   if (chain === "evm") {
-    return "Connect Rootstock / Demo";
+    return "Connect Beexo / Rootstock";
   }
 
   if (chain === "svm") {

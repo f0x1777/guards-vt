@@ -25,7 +25,7 @@ This is the canonical tracker for the Rootstock / Beexo derivation of Guards.
 
 ## Beexo Connect Track
 - [ ] Install and integrate `xo-connect`
-- [ ] Replace demo-only wallet flows with Beexo-first EIP-1193 connection
+- [x] Add a first Beexo / EIP-1193 Rootstock wallet scaffold in the UI
 - [ ] Add wallet onboarding flow for LATAM-oriented users
 - [ ] Show connected wallet state in the dashboard and landing CTA
 - [ ] Validate a demonstrable Beexo flow in the final demo

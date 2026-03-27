@@ -62,6 +62,15 @@ The new implementation must pivot to:
   - `Sovryn`
 - policy-driven treasury actions over Rootstock assets and rails
 
+## Wallet UX Direction
+
+The primary wallet UX path for this adaptation is `Beexo Connect` over an `EIP-1193` provider model.
+
+In practice that means:
+- Rootstock testnet is the default target network
+- the app should request or add the Rootstock chain in the wallet
+- demo fallback stays available for fast product iteration
+
 ## Minimal MVP For The Track
 
 A credible Rootstock + Beexo MVP should include:
