@@ -5,7 +5,7 @@ This document describes the **actual contract surface that exists today** and th
 ## Current Contract: `GuardedTreasuryVault`
 
 Source:
-- [`apps/blockchain/rootstock/contracts/src/GuardedTreasuryVault.sol`](/Users/nico/Projects-personal/Hackatons/guards-rootstock/apps/blockchain/rootstock/contracts/src/GuardedTreasuryVault.sol)
+- [`apps/blockchain/rootstock/contracts/src/GuardedTreasuryVault.sol`](../apps/blockchain/rootstock/contracts/src/GuardedTreasuryVault.sol)
 
 ### What it does today
 
@@ -128,7 +128,7 @@ Why this is second:
 - but also easier to overgeneralize if adapter bounds are weak
 
 Reference:
-- [Sovryn AMM integration example](https://private.sovryn.com/blog/defiant-integrates-sovryns-amm)
+- [Sovryn AMM integration example](https://sovryn.com/blog)
 
 ### 5. Off-chain policy engine / keeper (UI + server side, not necessarily a contract)
 
