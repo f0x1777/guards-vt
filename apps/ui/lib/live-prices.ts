@@ -170,16 +170,16 @@ export function liveReferencePriceForSymbol(
   guardrails?: OracleGuardrails,
 ): number | undefined {
   const quote = (() => {
-  switch (symbol) {
-    case "XAU/USD":
+    switch (symbol) {
+      case "XAU/USD":
         return quotes.xau;
-    case "BTC/USD":
+      case "BTC/USD":
         return quotes.btc;
-    case "SOL/USD":
+      case "SOL/USD":
         return quotes.sol;
-    case "EUR/USD":
+      case "EUR/USD":
         return quotes.eur;
-    default:
+      default:
         return undefined;
     }
   })();

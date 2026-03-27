@@ -74,4 +74,14 @@ describe("runMockBacktest", () => {
     expect(firstExecution?.sourceSymbol).toBe("DOC");
     expect(firstExecution?.destinationSymbol).toBe("RBTC");
   });
+
+  it("uses a lower live reference override instead of clamping to the default", () => {
+    const result = runMockBacktest(draft, {
+      strategy: "xau_target",
+      dataset: "xau_rotation",
+      referenceBasePrice: 4_300,
+    });
+
+    expect(result.points[0]?.referencePrice).toBeLessThan(4_350);
+  });
 });

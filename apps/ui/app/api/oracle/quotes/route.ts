@@ -3,6 +3,10 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const REQUEST_TIMEOUT_MS = 5_000;
+const QUOTE_CACHE_TTL_MS = 60_000;
+const EMA_SMOOTHING_WINDOW_MS = 30 * 60 * 1000;
+
 interface MarketQuote {
   feedId: string;
   symbol: string;
@@ -29,13 +33,39 @@ interface FrankfurterResponse {
   };
 }
 
+interface QuotesResponseBody {
+  ok: boolean;
+  source: "market_live";
+  quotes: {
+    rbtc: MarketQuote;
+    btc: MarketQuote;
+    sol: MarketQuote;
+    xau: MarketQuote;
+    eur: MarketQuote;
+  };
+}
+
+interface QuoteCacheEntry {
+  expiresAtMs: number;
+  body: QuotesResponseBody;
+}
+
+interface EmaCacheEntry {
+  emaPrice: number;
+  updatedAtMs: number;
+}
+
+let quoteCache: QuoteCacheEntry | null = null;
+const emaCache = new Map<string, EmaCacheEntry>();
+
 async function fetchJson<T>(url: string): Promise<T> {
   const response = await fetch(url, {
     method: "GET",
-    cache: "no-store",
+    cache: "force-cache",
     headers: {
       accept: "application/json",
     },
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
 
   if (!response.ok) {
@@ -53,6 +83,28 @@ function requireNumber(value: number | undefined, label: string): number {
   return value as number;
 }
 
+function nextEmaPrice(feedId: string, price: number, updatedAtMs: number): number {
+  const previous = emaCache.get(feedId);
+  if (!previous || updatedAtMs <= previous.updatedAtMs) {
+    emaCache.set(feedId, {
+      emaPrice: price,
+      updatedAtMs,
+    });
+    return price;
+  }
+
+  const elapsedMs = Math.max(1, updatedAtMs - previous.updatedAtMs);
+  const alpha = 1 - Math.exp(-elapsedMs / EMA_SMOOTHING_WINDOW_MS);
+  const emaPrice = Number(
+    (previous.emaPrice + (price - previous.emaPrice) * alpha).toFixed(6),
+  );
+  emaCache.set(feedId, {
+    emaPrice,
+    updatedAtMs,
+  });
+  return emaPrice;
+}
+
 function buildQuote(
   feedId: string,
   symbol: string,
@@ -64,7 +116,7 @@ function buildQuote(
     feedId,
     symbol,
     price,
-    emaPrice: price,
+    emaPrice: nextEmaPrice(feedId, price, updatedAtMs),
     confidence: Number((price * confidenceRatio).toFixed(6)),
     updatedAtMs,
   };
@@ -72,6 +124,11 @@ function buildQuote(
 
 export async function GET() {
   try {
+    const nowMs = Date.now();
+    if (quoteCache && quoteCache.expiresAtMs > nowMs) {
+      return NextResponse.json(quoteCache.body);
+    }
+
     const [coingecko, gold, eur] = await Promise.all([
       fetchJson<CoinGeckoSimplePriceResponse>(
         "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,solana&vs_currencies=usd",
@@ -80,15 +137,21 @@ export async function GET() {
       fetchJson<FrankfurterResponse>("https://api.frankfurter.app/latest?from=EUR&to=USD"),
     ]);
 
-    const nowMs = Date.now();
-    const goldUpdatedAtMs = gold.updatedAt ? Date.parse(gold.updatedAt) : nowMs;
+    const goldUpdatedAtMs = (() => {
+      if (!gold.updatedAt) {
+        return nowMs;
+      }
+
+      const parsed = Date.parse(gold.updatedAt);
+      return Number.isFinite(parsed) ? parsed : nowMs;
+    })();
 
     const btcUsd = requireNumber(coingecko.bitcoin?.usd, "bitcoin.usd");
     const solUsd = requireNumber(coingecko.solana?.usd, "solana.usd");
     const xauUsd = requireNumber(gold.price, "xau.price");
     const eurUsd = requireNumber(eur.rates?.USD, "eur.usd");
 
-    return NextResponse.json({
+    const body: QuotesResponseBody = {
       ok: true,
       source: "market_live",
       quotes: {
@@ -98,7 +161,13 @@ export async function GET() {
         xau: buildQuote("market-xau-usd", "XAU/USD", xauUsd, goldUpdatedAtMs, 0.0008),
         eur: buildQuote("market-eur-usd", "EUR/USD", eurUsd, nowMs, 0.0002),
       },
-    });
+    };
+    quoteCache = {
+      expiresAtMs: nowMs + QUOTE_CACHE_TTL_MS,
+      body,
+    };
+
+    return NextResponse.json(body);
   } catch (error) {
     return NextResponse.json(
       {

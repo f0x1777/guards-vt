@@ -199,6 +199,7 @@ function referenceBasePrice(referenceSymbol: string): number {
 }
 
 function buildReferencePrice(
+  referenceSymbol: string,
   baseReferencePrice: number,
   dataset: MockDatasetId,
   index: number,
@@ -206,6 +207,18 @@ function buildReferencePrice(
 ): number {
   if (baseReferencePrice <= 0) {
     return 0;
+  }
+
+  if (referenceSymbol === "XAU/USD") {
+    const rotationBias =
+      dataset === "xau_rotation"
+        ? progress * (baseReferencePrice * 0.04)
+        : progress * (baseReferencePrice * 0.004);
+    return (
+      baseReferencePrice +
+      Math.sin(index / 35) * (baseReferencePrice * 0.006) +
+      rotationBias
+    );
   }
 
   if (baseReferencePrice > 10_000) {
@@ -223,8 +236,10 @@ function buildReferencePrice(
     const depegBias = dataset === "stable_depeg" ? -0.018 : 0;
     return baseReferencePrice * (1 + progress * 0.012) + Math.sin(index / 18) * 0.006 + depegBias;
   }
-
-  const rotationBias = dataset === "xau_rotation" ? progress * (baseReferencePrice * 0.04) : progress * (baseReferencePrice * 0.004);
+  const rotationBias =
+    dataset === "xau_rotation"
+      ? progress * (baseReferencePrice * 0.04)
+      : progress * (baseReferencePrice * 0.004);
   return baseReferencePrice + Math.sin(index / 35) * (baseReferencePrice * 0.006) + rotationBias;
 }
 
@@ -237,10 +252,11 @@ function buildPriceSeries(
   const startMs = endMs - options.days * 24 * 60 * 60 * 1000;
   const baseRiskPrice = Math.max(options.riskBasePrice, 1);
   const baseStablePrice = Math.max(options.stableBasePrice, 0.5);
-  const baseReferencePrice = Math.max(
-    options.referenceBasePrice,
-    referenceBasePrice(options.referenceSymbol),
-  );
+  const defaultReferenceBasePrice = referenceBasePrice(options.referenceSymbol);
+  const baseReferencePrice =
+    Number.isFinite(options.referenceBasePrice) && options.referenceBasePrice > 0
+      ? options.referenceBasePrice
+      : defaultReferenceBasePrice;
   let ema = baseRiskPrice;
 
   return Array.from({ length: steps }, (_, index) => {
@@ -253,6 +269,7 @@ function buildPriceSeries(
     let drift = progress > 0.6 ? (progress - 0.6) * 0.02 : 0;
     let stablePrice = clamp(baseStablePrice * (1 + Math.sin(index / 48) * 0.0018), 0.972, 1.01);
     let referencePrice = buildReferencePrice(
+      options.referenceSymbol,
       baseReferencePrice,
       options.dataset,
       index,
@@ -273,6 +290,7 @@ function buildPriceSeries(
       selloff = Math.exp(-Math.pow((progress - 0.5) / 0.11, 2)) * -0.09;
       recovery = Math.exp(-Math.pow((progress - 0.86) / 0.08, 2)) * 0.03;
       referencePrice = buildReferencePrice(
+        options.referenceSymbol,
         baseReferencePrice,
         options.dataset,
         index,
