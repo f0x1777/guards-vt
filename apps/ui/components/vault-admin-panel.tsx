@@ -1,13 +1,20 @@
 "use client";
 
 import { Shield, Users, Waypoints } from "lucide-react";
-import type { CompanyVaultProfile } from "@/lib/company-profiles";
+import {
+  getTreasuryRail,
+  type CompanyVaultProfile,
+} from "@/lib/company-profiles";
+import { shortWalletAddress } from "@/lib/wallet-session";
 
 interface VaultAdminPanelProps {
   profile: CompanyVaultProfile;
 }
 
 export function VaultAdminPanel({ profile }: VaultAdminPanelProps) {
+  const governanceRail = getTreasuryRail(profile, "governance");
+  const executionRail = getTreasuryRail(profile, "execution");
+
   return (
     <div className="glass-panel overflow-hidden">
       <div className="border-b border-line px-5 py-4">
@@ -48,7 +55,9 @@ export function VaultAdminPanel({ profile }: VaultAdminPanelProps) {
                     <p className="text-sm font-semibold text-text">{member.name}</p>
                     <p className="mt-0.5 text-xs text-text-muted">{member.role}</p>
                   </div>
-                  <span className="font-mono text-xs text-text-secondary">{member.address}</span>
+                  <span className="font-mono text-xs text-text-secondary">
+                    {shortWalletAddress(member.address)}
+                  </span>
                 </div>
               ))}
             </div>
@@ -64,11 +73,15 @@ export function VaultAdminPanel({ profile }: VaultAdminPanelProps) {
             <div className="space-y-2">
               <div className="rounded-xl border border-line-soft px-3 py-3">
                 <p className="eyebrow">Governance wallet</p>
-                <p className="mt-2 font-mono text-xs text-text">{profile.governanceWallet}</p>
+                <p className="mt-2 font-mono text-xs text-text">
+                  {governanceRail ? shortWalletAddress(governanceRail.address) : "Unconfigured"}
+                </p>
               </div>
               <div className="rounded-xl border border-line-soft px-3 py-3">
                 <p className="eyebrow">Execution hot wallet</p>
-                <p className="mt-2 font-mono text-xs text-text">{profile.executionHotWallet}</p>
+                <p className="mt-2 font-mono text-xs text-text">
+                  {executionRail ? shortWalletAddress(executionRail.address) : "Unconfigured"}
+                </p>
               </div>
             </div>
           </div>
@@ -88,7 +101,9 @@ export function VaultAdminPanel({ profile }: VaultAdminPanelProps) {
                     <p className="text-sm font-semibold text-text">{rail.label}</p>
                     <span className="chip">{rail.purpose}</span>
                   </div>
-                  <p className="mt-2 font-mono text-xs text-text-secondary">{rail.address}</p>
+                  <p className="mt-2 font-mono text-xs text-text-secondary">
+                    {shortWalletAddress(rail.address)}
+                  </p>
                 </div>
               ))}
             </div>

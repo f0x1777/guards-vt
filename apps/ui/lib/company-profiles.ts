@@ -10,8 +10,6 @@ export interface CompanyVaultProfile {
   custodyMode: CustodyMode;
   governanceModel: string;
   thresholdLabel: string;
-  governanceWallet: string;
-  executionHotWallet: string;
   approvedRouteId: string;
   referenceSymbol: string;
   referencePrice?: number;
@@ -25,11 +23,14 @@ export interface CompanyVaultProfile {
   }>;
   treasuryRails: Array<{
     id: string;
+    kind: TreasuryRailKind;
     label: string;
     address: string;
     purpose: string;
   }>;
 }
+
+export type TreasuryRailKind = "governance" | "execution" | "payout" | "settlement" | "bridge";
 
 export const companyVaultProfiles: CompanyVaultProfile[] = [
   {
@@ -40,8 +41,6 @@ export const companyVaultProfiles: CompanyVaultProfile[] = [
     custodyMode: "safe",
     governanceModel: "Safe",
     thresholdLabel: "3 / 5",
-    governanceWallet: "0x9cF3...governance",
-    executionHotWallet: "0x4a11...hot",
     approvedRouteId: "rootstock-sovryn-rbtc-doc",
     referenceSymbol: "BTC/USD",
     referencePrice: 67846.32774,
@@ -55,9 +54,9 @@ export const companyVaultProfiles: CompanyVaultProfile[] = [
       { id: "m5", name: "Mica", role: "Risk", address: "0x1bc0...f00d" },
     ],
     treasuryRails: [
-      { id: "gov", label: "Governance", address: "0x9cF3...governance", purpose: "policy and admin" },
-      { id: "ops", label: "Operator", address: "0x4a11...hot", purpose: "bounded execution" },
-      { id: "payout", label: "Payout", address: "0x8140...pay", purpose: "vendors and payroll" },
+      { id: "gov", kind: "governance", label: "Governance", address: "0x9cF3...governance", purpose: "policy and admin" },
+      { id: "ops", kind: "execution", label: "Operator", address: "0x4a11...hot", purpose: "bounded execution" },
+      { id: "payout", kind: "payout", label: "Payout", address: "0x8140...pay", purpose: "vendors and payroll" },
     ],
   },
   {
@@ -68,8 +67,6 @@ export const companyVaultProfiles: CompanyVaultProfile[] = [
     custodyMode: "safe",
     governanceModel: "Safe",
     thresholdLabel: "2 / 3",
-    governanceWallet: "0x3bA1...paymentsGov",
-    executionHotWallet: "0x8e10...paymentsOps",
     approvedRouteId: "rootstock-moc-rbtc-doc",
     referenceSymbol: "EUR/USD",
     referencePrice: 1.15578,
@@ -81,9 +78,9 @@ export const companyVaultProfiles: CompanyVaultProfile[] = [
       { id: "m3", name: "Sofi", role: "Signer", address: "0x95B2...3333" },
     ],
     treasuryRails: [
-      { id: "gov", label: "Governance", address: "0x3bA1...paymentsGov", purpose: "policy and admin" },
-      { id: "ops", label: "Operator", address: "0x8e10...paymentsOps", purpose: "execution bucket" },
-      { id: "settlement", label: "Settlement", address: "0x8890...settle", purpose: "merchant flows" },
+      { id: "gov", kind: "governance", label: "Governance", address: "0x3bA1...paymentsGov", purpose: "policy and admin" },
+      { id: "ops", kind: "execution", label: "Operator", address: "0x8e10...paymentsOps", purpose: "execution bucket" },
+      { id: "settlement", kind: "settlement", label: "Settlement", address: "0x8890...settle", purpose: "merchant flows" },
     ],
   },
   {
@@ -94,8 +91,6 @@ export const companyVaultProfiles: CompanyVaultProfile[] = [
     custodyMode: "safe",
     governanceModel: "Safe",
     thresholdLabel: "4 / 7",
-    governanceWallet: "0x1d92...andesGov",
-    executionHotWallet: "0xb271...andesOps",
     approvedRouteId: "rootstock-sovryn-doc-rbtc",
     referenceSymbol: "XAU/USD",
     referencePrice: 4421.412,
@@ -111,9 +106,9 @@ export const companyVaultProfiles: CompanyVaultProfile[] = [
       { id: "m7", name: "Rama", role: "Operator", address: "0x1c18...7777" },
     ],
     treasuryRails: [
-      { id: "gov", label: "Governance", address: "0x1d92...andesGov", purpose: "multisig control" },
-      { id: "ops", label: "Operator", address: "0xb271...andesOps", purpose: "bounded execution" },
-      { id: "bridge", label: "Bridge Rail", address: "0x7710...bridge", purpose: "cross-chain treasury ops" },
+      { id: "gov", kind: "governance", label: "Governance", address: "0x1d92...andesGov", purpose: "multisig control" },
+      { id: "ops", kind: "execution", label: "Operator", address: "0xb271...andesOps", purpose: "bounded execution" },
+      { id: "bridge", kind: "bridge", label: "Bridge Rail", address: "0x7710...bridge", purpose: "cross-chain treasury ops" },
     ],
   },
 ];
@@ -124,17 +119,26 @@ function resolveReferencePrice(profile: CompanyVaultProfile): number {
 }
 
 export function applyProfileToDraft(baseDraft: VaultBootstrapDraft, profile: CompanyVaultProfile): VaultBootstrapDraft {
+  const governanceRail = getTreasuryRail(profile, "governance");
+  const executionRail = getTreasuryRail(profile, "execution");
   return {
     ...baseDraft,
     companyName: profile.companyName,
     vaultName: profile.vaultName,
     custodyMode: profile.custodyMode,
-    governanceWallet: profile.governanceWallet,
-    executionHotWallet: profile.executionHotWallet,
+    governanceWallet: governanceRail?.address ?? "",
+    executionHotWallet: executionRail?.address ?? "",
     approvedRouteId: profile.approvedRouteId,
     referenceSymbol: profile.referenceSymbol,
     referencePrice: resolveReferencePrice(profile),
     targetOunces: profile.targetOunces,
     useReferenceTarget: profile.useReferenceTarget,
   };
+}
+
+export function getTreasuryRail(
+  profile: CompanyVaultProfile,
+  kind: TreasuryRailKind,
+) {
+  return profile.treasuryRails.find((rail) => rail.kind === kind);
 }

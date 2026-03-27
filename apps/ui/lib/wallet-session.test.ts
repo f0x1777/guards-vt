@@ -80,6 +80,15 @@ describe("wallet session helpers", () => {
     });
   });
 
+  it("still reports Beexo availability without an injected EVM provider", () => {
+    installWindowMock();
+
+    expect(detectWalletAvailability()).toEqual({
+      beexo: true,
+      evm: false,
+    });
+  });
+
   it("returns a mock wallet when explicitly requested", async () => {
     const session = await connectWallet("mock");
 

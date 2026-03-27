@@ -101,11 +101,11 @@ export function HistoricalStrategyLab({ draft, dataset }: HistoricalStrategyLabP
     [dataset, draft, strategy],
   );
 
-  const activePoint = result.points[activeIndex] ?? result.points[0];
+  const activePoint = result.points[activeIndex] ?? result.points[0] ?? null;
   const appearance = getStageAppearance(activePoint?.stage ?? "normal");
 
   useEffect(() => {
-    if (!autoplay || typeof window === "undefined") {
+    if (!autoplay || typeof window === "undefined" || result.points.length === 0) {
       return undefined;
     }
 
@@ -115,6 +115,16 @@ export function HistoricalStrategyLab({ draft, dataset }: HistoricalStrategyLabP
 
     return () => window.clearInterval(timer);
   }, [autoplay, result.points.length]);
+
+  useEffect(() => {
+    if (result.points.length === 0 && autoplay) {
+      setAutoplay(false);
+    }
+  }, [autoplay, result.points.length]);
+
+  if (!activePoint) {
+    return null;
+  }
 
   return (
     <div className="glass-panel overflow-hidden">
@@ -204,7 +214,7 @@ export function HistoricalStrategyLab({ draft, dataset }: HistoricalStrategyLabP
               </div>
               <div className="rounded-xl border border-line px-3 py-3">
                 <p className="eyebrow">Last point</p>
-                <p className="mt-2 text-sm font-semibold text-text">{activePoint?.label}</p>
+                <p className="mt-2 text-sm font-semibold text-text">{activePoint.label}</p>
               </div>
             </div>
           </div>
@@ -212,22 +222,22 @@ export function HistoricalStrategyLab({ draft, dataset }: HistoricalStrategyLabP
           <div className="rounded-2xl border border-line bg-bg-soft p-4 space-y-3">
             <div>
               <p className="eyebrow">Active point</p>
-              <p className="mt-2 text-lg font-semibold text-text">{riskSymbol} ${activePoint?.adaPrice.toFixed(4)}</p>
-              <p className="mt-1 text-sm text-text-secondary">EMA ${activePoint?.adaEmaPrice.toFixed(4)} · confidence ±${activePoint?.adaConfidence.toFixed(4)}</p>
+              <p className="mt-2 text-lg font-semibold text-text">{riskSymbol} ${activePoint.adaPrice.toFixed(4)}</p>
+              <p className="mt-1 text-sm text-text-secondary">EMA ${activePoint.adaEmaPrice.toFixed(4)} · confidence ±${activePoint.adaConfidence.toFixed(4)}</p>
             </div>
             <div>
               <p className="eyebrow">Strategy trigger</p>
-              <p className="mt-2 text-sm text-text-secondary">{activePoint?.trigger}</p>
+              <p className="mt-2 text-sm text-text-secondary">{activePoint.trigger}</p>
             </div>
             <div>
               <p className="eyebrow">Execution</p>
               <p className="mt-2 text-sm text-text-secondary">
-                {activePoint?.executionLabel ?? "No execution at this step."}
+                {activePoint.executionLabel ?? "No execution at this step."}
               </p>
             </div>
             <div>
               <p className="eyebrow">Reference asset ({draft.referenceSymbol})</p>
-              <p className="mt-2 text-sm text-text-secondary">${activePoint?.referencePrice.toFixed(2)}</p>
+              <p className="mt-2 text-sm text-text-secondary">${activePoint.referencePrice.toFixed(2)}</p>
             </div>
           </div>
         </div>

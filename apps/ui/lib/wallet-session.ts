@@ -114,8 +114,15 @@ export function persistWalletSession(session: WalletSession | null): void {
 }
 
 export function detectWalletAvailability(): WalletAvailability {
+  if (typeof window === "undefined") {
+    return {
+      beexo: false,
+      evm: false,
+    };
+  }
+
   return {
-    beexo: typeof window !== "undefined",
+    beexo: true,
     evm: Boolean(getEvmProvider()),
   };
 }
@@ -136,41 +143,26 @@ function buildEvmWalletSession(
 }
 
 async function connectBeexoWalletSession(): Promise<WalletSession | null> {
-  const result = await connectBeexoWallet();
-  if (!result) {
+  try {
+    const result = await connectBeexoWallet();
+    if (!result) {
+      return null;
+    }
+
+    return buildEvmWalletSession(result.address, "beexo_eip1193", result.label);
+  } catch {
     return null;
   }
-
-  return buildEvmWalletSession(result.address, "beexo_eip1193", result.label);
 }
 
 async function connectInjectedEvmWalletSession(): Promise<WalletSession | null> {
   try {
-    const provider = getEvmProvider();
-    if (!provider?.request) {
+    const result = await connectInjectedEvmWallet();
+    if (!result) {
       return null;
     }
 
-    try {
-      const accounts = await provider.request({ method: "eth_requestAccounts" });
-      const address =
-        Array.isArray(accounts) &&
-        typeof accounts[0] === "string" &&
-        accounts[0].length > 0
-          ? accounts[0]
-          : null;
-      if (address === null) {
-        return null;
-      }
-
-      return buildEvmWalletSession(
-        address,
-        "eip1193",
-        provider.isMetaMask ? "Rootstock EVM Wallet" : "Beexo / EVM Wallet",
-      );
-    } catch {
-      return null;
-    }
+    return buildEvmWalletSession(result.address, "eip1193", result.label);
   } catch {
     return null;
   }
@@ -188,10 +180,4 @@ export async function connectWallet(option: WalletConnectionOption): Promise<Wal
   return (await connectInjectedEvmWalletSession()) ?? createMockWalletSession();
 }
 
-export async function connectPreferredWallet(): Promise<WalletSession> {
-  return (
-    (await connectBeexoWalletSession()) ??
-    (await connectInjectedEvmWalletSession()) ??
-    createMockWalletSession()
-  );
-}
+
