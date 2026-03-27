@@ -24,6 +24,11 @@ Current implementation note:
 - Foundry deploy script and tests are live
 - protocol-specific DeFi execution stays outside the vault and should be routed through bounded adapters
 
+Important boundary:
+- this contract is a guarded treasury vault, not a policy engine
+- it does not yet evaluate market conditions or execute bounded protocol actions
+- the pending contract layout is documented in [../../../../docs/ROOTSTOCK_CONTRACT_ARCHITECTURE.md](../../../../docs/ROOTSTOCK_CONTRACT_ARCHITECTURE.md)
+
 ## Tooling choice
 
 The recommended stack for this repo is `Foundry`, because it is fast to scaffold, test, and deploy for an EVM-compatible target like Rootstock.

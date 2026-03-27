@@ -62,6 +62,11 @@ Today the Rootstock vault surface already supports:
 - per-asset execution caps
 - replay protection for staged treasury actions
 
+Current status clarification:
+- the deployed-contract surface today is a **guarded treasury vault**
+- it is **not yet** the full policy engine or automated DeFi execution layer
+- the pending contract architecture is documented in [docs/ROOTSTOCK_CONTRACT_ARCHITECTURE.md](./docs/ROOTSTOCK_CONTRACT_ARCHITECTURE.md)
+
 ## Bounded Automation Direction
 
 Automatic swaps are possible on Rootstock, but the product should frame them as bounded treasury actions, not arbitrary trading.
@@ -99,6 +104,7 @@ See:
 - [docs/ROOTSTOCK_PRODUCT_PLAN.md](./docs/ROOTSTOCK_PRODUCT_PLAN.md)
 - [docs/ROOTSTOCK_IMPLEMENTATION_TRACKER.md](./docs/ROOTSTOCK_IMPLEMENTATION_TRACKER.md)
 - [docs/ROOTSTOCK_DEPLOY_RUNBOOK.md](./docs/ROOTSTOCK_DEPLOY_RUNBOOK.md)
+- [docs/ROOTSTOCK_CONTRACT_ARCHITECTURE.md](./docs/ROOTSTOCK_CONTRACT_ARCHITECTURE.md)
 
 ## Rootstock Deploy Surface
 
