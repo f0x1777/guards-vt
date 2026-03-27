@@ -2,6 +2,10 @@
 
 set -euo pipefail
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC1091
+source "${script_dir}/source-root-env.sh"
+
 required_vars=(
   ROOTSTOCK_RPC_URL
   ROOTSTOCK_DEPLOYER_PRIVATE_KEY
