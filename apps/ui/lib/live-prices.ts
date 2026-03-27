@@ -16,7 +16,7 @@ interface OracleGuardrails {
   maxConfidenceBps: number;
 }
 
-function fallbackStablePrice(_assetId: string): number {
+function fallbackStablePrice(): number {
   return 1;
 }
 
@@ -51,7 +51,7 @@ function positionPrice(
     return oracle.price;
   }
 
-  return fallbackStablePrice(position.assetId);
+  return fallbackStablePrice();
 }
 
 function revalueFrames(
