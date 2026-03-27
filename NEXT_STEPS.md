@@ -18,7 +18,8 @@ This is the canonical tracker for the Rootstock / Beexo derivation of Guards.
 - [x] Define the first contract scope for Rootstock
 - [x] Decide the first contract scope: `GuardedTreasuryVault` as a bounded treasury vault / guarded transfer executor
 - [x] Create `apps/blockchain/rootstock/contracts`
-- [ ] Add Solidity / Foundry or Hardhat setup for Rootstock
+- [x] Add an initial Foundry scaffold for Rootstock
+- [ ] Install Foundry in the real dev environment and validate the scaffold
 - [ ] Deploy at least one contract on Rootstock testnet
 - [ ] Document deployed addresses and networks
 
