@@ -117,7 +117,7 @@ export function HistoricalStrategyLab({
         initialRiskAmount: riskPosition?.amount ?? 0,
         initialStableAmount: stablePosition?.amount ?? 0,
       }),
-    [currentReferencePrice, currentRiskPrice, dataset, draft, positions, riskPosition?.amount, stablePosition?.amount, stablePosition?.fiatValue, strategy],
+    [currentReferencePrice, currentRiskPrice, dataset, draft, positions, strategy],
   );
 
   const activePoint = result.points[activeIndex] ?? result.points[0];

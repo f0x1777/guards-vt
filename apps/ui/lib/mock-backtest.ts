@@ -214,8 +214,8 @@ function buildReferencePrice(
   }
 
   if (baseReferencePrice > 20) {
-    const rotationBias = dataset === "xau_rotation" ? 24 : 0;
-    return baseReferencePrice * (1 + progress * 0.06) + Math.sin(index / 13) * 9 + rotationBias;
+    const rotationBias = dataset === "xau_rotation" ? baseReferencePrice * 0.005 : 0;
+    return baseReferencePrice * (1 + progress * 0.06) + Math.sin(index / 13) * (baseReferencePrice * 0.002) + rotationBias;
   }
 
   if (baseReferencePrice < 5) {

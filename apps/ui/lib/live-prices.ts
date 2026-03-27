@@ -16,16 +16,8 @@ interface OracleGuardrails {
   maxConfidenceBps: number;
 }
 
-function fallbackStablePrice(assetId: string): number {
-  switch (assetId) {
-    case "doc":
-    case "usdrif":
-    case "usdt":
-    case "usdc":
-      return 1;
-    default:
-      return 1;
-  }
+function fallbackStablePrice(_assetId: string): number {
+  return 1;
 }
 
 function baseOracleForState(
