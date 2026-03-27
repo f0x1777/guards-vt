@@ -30,12 +30,19 @@ describe("applyLiveQuotesToDemoState", () => {
     vi.useRealTimers();
   });
 
-  it("is a no-op when there is no matching risk quote", () => {
+  it("revalues positions from the base oracle when no live quote is present", () => {
     const state = cloneState();
-    expect(applyLiveQuotesToDemoState(state, {})).toEqual(state);
+    const nextState = applyLiveQuotesToDemoState(state, {});
+
+    expect(nextState.positions.find((position) => position.role === "risk")?.fiatValue).toBeCloseTo(
+      Number((0.825 * demoState.oracle.price).toFixed(2)),
+      2,
+    );
+    expect(nextState.metrics.liquidValue).toBeGreaterThan(0);
   });
 
   it("rejects stale or low-confidence quotes using policy guardrails", () => {
+    const expected = applyLiveQuotesToDemoState(cloneState(), {});
     const staleQuote: LiveQuoteMap = {
       rbtc: {
         ...stateOracle(),
@@ -49,8 +56,8 @@ describe("applyLiveQuotesToDemoState", () => {
       },
     };
 
-    expect(applyLiveQuotesToDemoState(cloneState(), staleQuote)).toEqual(cloneState());
-    expect(applyLiveQuotesToDemoState(cloneState(), wideConfidenceQuote)).toEqual(cloneState());
+    expect(applyLiveQuotesToDemoState(cloneState(), staleQuote)).toEqual(expected);
+    expect(applyLiveQuotesToDemoState(cloneState(), wideConfidenceQuote)).toEqual(expected);
   });
 
   it("recomputes liquid value, stable ratio, and weights when RBTC price changes", () => {
@@ -64,7 +71,7 @@ describe("applyLiveQuotesToDemoState", () => {
 
     const riskPosition = state.positions.find((position) => position.role === "risk");
     const stablePosition = state.positions.find((position) => position.role === "stable");
-    const expectedRiskFiat = 8.25 * 70_000;
+    const expectedRiskFiat = 0.825 * 70_000;
     const expectedTotal = expectedRiskFiat + 36_000;
     const expectedLiquid = expectedRiskFiat * (1 - demoState.policy.haircutBps / 10_000) + 36_000;
 
@@ -79,7 +86,7 @@ describe("applyLiveQuotesToDemoState", () => {
   it("returns guarded live reference prices by symbol", () => {
     const quotes: LiveQuoteMap = {
       xau: {
-        feedId: "pyth-xau-usd",
+        feedId: "market-xau-usd",
         symbol: "XAU/USD",
         price: 4405.12,
         emaPrice: 4398,
@@ -88,7 +95,7 @@ describe("applyLiveQuotesToDemoState", () => {
         publisherCount: 12,
       },
       btc: {
-        feedId: "pyth-btc-usd",
+        feedId: "market-btc-usd",
         symbol: "BTC/USD",
         price: 84500,
         emaPrice: 84400,
@@ -121,7 +128,7 @@ describe("applyLiveQuotesToDemoState", () => {
   it("rejects stale reference quotes", () => {
     const quotes: LiveQuoteMap = {
       xau: {
-        feedId: "pyth-xau-usd",
+        feedId: "market-xau-usd",
         symbol: "XAU/USD",
         price: 4405.12,
         emaPrice: 4398,
@@ -142,7 +149,7 @@ describe("applyLiveQuotesToDemoState", () => {
 
 function stateOracle() {
   return {
-    feedId: "pyth-rbtc-usd",
+    feedId: "market-rbtc-usd",
     symbol: "RBTC/USD",
     price: 68_000,
     emaPrice: 68_220,

@@ -25,6 +25,11 @@ export interface MockBacktestOptions {
   days: number;
   intervalMinutes: number;
   referenceSymbol: string;
+  riskBasePrice: number;
+  stableBasePrice: number;
+  referenceBasePrice: number;
+  initialRiskAmount: number;
+  initialStableAmount: number;
 }
 
 export interface MockBacktestPoint {
@@ -96,10 +101,15 @@ const MOCK_BACKTEST_ANCHOR_MS = Date.parse("2026-03-22T19:00:00.000Z");
 
 const DEFAULT_OPTIONS: MockBacktestOptions = {
   strategy: "guards_ladder",
-  dataset: "ada_treasury_base",
+  dataset: "ada_flash_crash",
   days: 7,
   intervalMinutes: 15,
   referenceSymbol: "XAU/USD",
+  riskBasePrice: 67_878.41,
+  stableBasePrice: 1,
+  referenceBasePrice: 4_421.412,
+  initialRiskAmount: 0.825,
+  initialStableAmount: 36_000,
 };
 
 export const mockStrategyOptions: MockStrategyOption[] = [
@@ -189,28 +199,32 @@ function referenceBasePrice(referenceSymbol: string): number {
 }
 
 function buildReferencePrice(
-  referenceSymbol: string,
+  baseReferencePrice: number,
   dataset: MockDatasetId,
   index: number,
   progress: number,
 ): number {
-  if (referenceSymbol === "BTC/USD") {
+  if (baseReferencePrice <= 0) {
+    return 0;
+  }
+
+  if (baseReferencePrice > 10_000) {
     const crashBias = dataset === "ada_flash_crash" ? -3_500 : 0;
-    return 87_250 + progress * 1_850 + Math.sin(index / 16) * 620 + crashBias;
+    return baseReferencePrice * (1 + progress * 0.03) + Math.sin(index / 16) * 620 + crashBias;
   }
 
-  if (referenceSymbol === "SOL/USD") {
+  if (baseReferencePrice > 20) {
     const rotationBias = dataset === "xau_rotation" ? 24 : 0;
-    return 186 + progress * 14 + Math.sin(index / 13) * 9 + rotationBias;
+    return baseReferencePrice * (1 + progress * 0.06) + Math.sin(index / 13) * 9 + rotationBias;
   }
 
-  if (referenceSymbol === "EUR/USD") {
+  if (baseReferencePrice < 5) {
     const depegBias = dataset === "stable_depeg" ? -0.018 : 0;
-    return 1.09 + progress * 0.012 + Math.sin(index / 18) * 0.006 + depegBias;
+    return baseReferencePrice * (1 + progress * 0.012) + Math.sin(index / 18) * 0.006 + depegBias;
   }
 
-  const rotationBias = dataset === "xau_rotation" ? progress * 160 : progress * 18;
-  return referenceBasePrice(referenceSymbol) + Math.sin(index / 35) * 24 + rotationBias;
+  const rotationBias = dataset === "xau_rotation" ? progress * (baseReferencePrice * 0.04) : progress * (baseReferencePrice * 0.004);
+  return baseReferencePrice + Math.sin(index / 35) * (baseReferencePrice * 0.006) + rotationBias;
 }
 
 function buildPriceSeries(
@@ -220,20 +234,25 @@ function buildPriceSeries(
   const steps = Math.max(8, Math.floor((options.days * 24 * 60) / options.intervalMinutes));
   const endMs = anchorNowMs;
   const startMs = endMs - options.days * 24 * 60 * 60 * 1000;
-  let ema = 0.48;
+  const baseRiskPrice = Math.max(options.riskBasePrice, 1);
+  const baseStablePrice = Math.max(options.stableBasePrice, 0.5);
+  const baseReferencePrice = Math.max(
+    options.referenceBasePrice,
+    referenceBasePrice(options.referenceSymbol),
+  );
+  let ema = baseRiskPrice;
 
   return Array.from({ length: steps }, (_, index) => {
     const progress = index / Math.max(steps - 1, 1);
     const timestampMs = startMs + index * options.intervalMinutes * 60 * 1000;
-    let base = 0.48;
-    let slowWave = Math.sin(index / 22) * 0.02;
-    let fastWave = Math.sin(index / 7) * 0.008;
+    let slowWave = Math.sin(index / 22) * 0.032;
+    let fastWave = Math.sin(index / 7) * 0.012;
     let selloff = Math.exp(-Math.pow((progress - 0.48) / 0.085, 2)) * -0.18;
     let recovery = Math.exp(-Math.pow((progress - 0.82) / 0.09, 2)) * 0.1;
-    let drift = progress > 0.6 ? (progress - 0.6) * 0.015 : 0;
-    let stablePrice = clamp(1 + Math.sin(index / 48) * 0.0018, 0.995, 1.004);
+    let drift = progress > 0.6 ? (progress - 0.6) * 0.02 : 0;
+    let stablePrice = clamp(baseStablePrice * (1 + Math.sin(index / 48) * 0.0018), 0.972, 1.01);
     let referencePrice = buildReferencePrice(
-      options.referenceSymbol,
+      baseReferencePrice,
       options.dataset,
       index,
       progress,
@@ -242,35 +261,35 @@ function buildPriceSeries(
     if (options.dataset === "ada_flash_crash") {
       selloff = Math.exp(-Math.pow((progress - 0.42) / 0.05, 2)) * -0.28;
       recovery = Math.exp(-Math.pow((progress - 0.78) / 0.08, 2)) * 0.07;
-      drift = progress > 0.7 ? (progress - 0.7) * 0.008 : 0;
+      drift = progress > 0.7 ? (progress - 0.7) * 0.012 : 0;
     } else if (options.dataset === "stable_depeg") {
-      stablePrice = clamp(1 - Math.exp(-Math.pow((progress - 0.58) / 0.08, 2)) * 0.022, 0.972, 1.003);
+      stablePrice = clamp(baseStablePrice * (1 - Math.exp(-Math.pow((progress - 0.58) / 0.08, 2)) * 0.022), 0.972, 1.003);
       selloff = Math.exp(-Math.pow((progress - 0.5) / 0.12, 2)) * -0.08;
       recovery = Math.exp(-Math.pow((progress - 0.84) / 0.1, 2)) * 0.04;
     } else if (options.dataset === "xau_rotation") {
-      base = 0.46;
-      slowWave = Math.sin(index / 26) * 0.015;
-      fastWave = Math.sin(index / 9) * 0.006;
+      slowWave = Math.sin(index / 26) * 0.022;
+      fastWave = Math.sin(index / 9) * 0.009;
       selloff = Math.exp(-Math.pow((progress - 0.5) / 0.11, 2)) * -0.09;
       recovery = Math.exp(-Math.pow((progress - 0.86) / 0.08, 2)) * 0.03;
       referencePrice = buildReferencePrice(
-        options.referenceSymbol,
+        baseReferencePrice,
         options.dataset,
         index,
         progress,
       );
     }
 
-    const adaPrice = clamp(base + slowWave + fastWave + selloff + recovery + drift, 0.18, 0.82);
+    const riskMultiplier = Math.max(0.05, 1 + slowWave + fastWave + selloff + recovery + drift);
+    const adaPrice = Number((baseRiskPrice * riskMultiplier).toFixed(6));
     ema = ema * 0.92 + adaPrice * 0.08;
     const stress = Math.max(0, (ema - adaPrice) / Math.max(ema, 0.0001));
-    const adaConfidence = 0.0018 + stress * 0.045;
+    const adaConfidence = Number((adaPrice * (0.0009 + stress * 0.0025)).toFixed(6));
 
     return {
       timestampMs,
-      adaPrice: Number(adaPrice.toFixed(6)),
+      adaPrice,
       adaEmaPrice: Number(ema.toFixed(6)),
-      adaConfidence: Number(adaConfidence.toFixed(6)),
+      adaConfidence,
       stablePrice: Number(stablePrice.toFixed(6)),
       referencePrice: Number(referencePrice.toFixed(2)),
     };
@@ -417,8 +436,8 @@ export function runMockBacktest(
   const executions: MockBacktestExecution[] = [];
   const points: MockBacktestPoint[] = [];
   const holdings: HoldingsState = {
-    adaAmount: 125000,
-    stableAmount: 37500,
+    adaAmount: resolved.initialRiskAmount,
+    stableAmount: resolved.initialStableAmount,
   };
   let currentStage: RiskStage = "normal";
   let minLiquidValueFiat = Number.POSITIVE_INFINITY;
