@@ -11,7 +11,7 @@ This is the canonical tracker for the Rootstock / Beexo derivation of Guards.
 - [x] Create a clean derivative repo for the Rootstock / Beexo track
 - [x] Remove public-facing Cardano / Pyth positioning from the README and planning surface
 - [x] Remove inherited local `.env` from the derived repo
-- [ ] Replace remaining Cardano / Pyth copy in the UI with Rootstock / Beexo positioning
+- [x] Replace remaining Cardano / Pyth copy in the UI with Rootstock / Beexo positioning
 - [ ] Decide the exact MVP scope for DoraHacks submission
 
 ## Rootstock Smart Contract Track
