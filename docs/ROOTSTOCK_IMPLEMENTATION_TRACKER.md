@@ -39,6 +39,7 @@ Current status:
 - bounded `RBTC` and ERC20 transfer execution is live
 - replay protection via `referenceId` is live
 - Foundry test coverage validates positive and negative execution paths
+- repo-level deploy scripts now wrap Rootstock testnet preflight and broadcast
 
 ## First Demo Candidate
 

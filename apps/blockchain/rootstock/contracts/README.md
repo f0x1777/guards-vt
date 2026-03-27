@@ -32,9 +32,10 @@ The repository vendors only the minimal `forge-std` source and license files nee
 
 ## Next steps
 
-1. Add RPC and deployer env vars for Rootstock testnet
-2. Deploy the first contract to Rootstock testnet
-3. Route a bounded Money on Chain or Sovryn action through an operator flow
+1. Fill the Rootstock deploy env vars in the repo `.env`
+2. Run `pnpm rootstock:contract:doctor`
+3. Run `pnpm rootstock:contract:deploy:testnet`
+4. Route a bounded Money on Chain or Sovryn action through an operator flow
 
 ## Validation status
 
