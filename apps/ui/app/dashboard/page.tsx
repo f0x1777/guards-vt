@@ -14,7 +14,6 @@ import { SwapPanel } from "@/components/swap-panel";
 import { SimulationReplay } from "@/components/simulation-replay";
 import { AuditLog } from "@/components/audit-log";
 import {
-  PreprodWarningBanner,
   PreprodWarningModal,
 } from "@/components/preprod-warning";
 import { VaultBootstrapLab } from "@/components/vault-bootstrap-lab";
@@ -195,13 +194,7 @@ export default function Dashboard() {
 
     setConnectingWallet(true);
     try {
-      const chain =
-        data.vault.chain === "svm"
-          ? "svm"
-          : data.vault.chain === "evm"
-            ? "evm"
-            : "cardano";
-      const session = await connectPreferredWallet(chain);
+      const session = await connectPreferredWallet();
       setWalletSession(session);
     } finally {
       setConnectingWallet(false);
@@ -255,7 +248,7 @@ export default function Dashboard() {
           oracleFreshness={data.metrics.oracleFreshness}
           mode={mode}
           liveQuotesError={liveQuotesError}
-          liveQuotesEnabled={Boolean(liveQuotes?.ada)}
+          liveQuotesEnabled={Boolean(liveQuotes?.rbtc)}
           walletSession={walletSession}
           companyName={bootstrapDraft.companyName}
           vaultName={bootstrapDraft.vaultName}
@@ -263,9 +256,6 @@ export default function Dashboard() {
           onConnectWallet={handleConnectWallet}
           onDisconnectWallet={() => setWalletSession(null)}
         />
-        <div className="mb-6">
-          <PreprodWarningBanner />
-        </div>
         <AnimatePresence mode="wait">
           {activeSection === "runtime" && (
             <motion.section key="runtime" {...sectionTransition} className="mb-8">
@@ -383,7 +373,7 @@ export default function Dashboard() {
               <VaultBootstrapLab
                 draft={bootstrapDraft}
                 setDraft={setBootstrapDraft}
-                currentAdaPrice={data.oracle.price}
+                currentRiskPrice={data.oracle.price}
                 currentReferencePrice={liveReferencePriceForSymbol(
                   liveQuotes ?? {},
                   bootstrapDraft.referenceSymbol,
@@ -438,11 +428,12 @@ export default function Dashboard() {
           {activeSection === "swap" && (
             <motion.section key="swap" {...sectionTransition} className="mb-8 max-w-md">
               <SwapPanel
-                riskSymbol={riskPosition?.symbol ?? "ADA"}
-                stableSymbol={stablePosition?.symbol ?? "USDM"}
+                riskSymbol={riskPosition?.symbol ?? "RBTC"}
+                stableSymbol={stablePosition?.symbol ?? "DOC"}
                 currentPrice={data.oracle.price}
                 oracleFreshness={data.metrics.oracleFreshness}
                 haircutBps={policyView.haircutBps}
+                routeLabel={bootstrapDraft.approvedRouteId}
               />
             </motion.section>
           )}

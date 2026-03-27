@@ -26,28 +26,12 @@ interface TopbarProps {
   onDisconnectWallet: () => void;
 }
 
-function chainLabel(chain: ChainId): string {
-  if (chain === "evm") {
-    return runtimeAvailability.rootstockNetworkLabel;
-  }
-
-  if (chain === "svm") {
-    return "Solana / SVM";
-  }
-
-  return "Cardano";
+function chainLabel(_chain: ChainId): string {
+  return runtimeAvailability.rootstockNetworkLabel;
 }
 
-function connectLabel(chain: ChainId): string {
-  if (chain === "evm") {
-    return "Connect Beexo / Rootstock";
-  }
-
-  if (chain === "svm") {
-    return "Connect SVM / Demo";
-  }
-
-  return "Connect Cardano / Demo";
+function connectLabel(_chain: ChainId): string {
+  return "Connect Beexo / Rootstock";
 }
 
 export function Topbar({

@@ -26,6 +26,8 @@ export function ScenarioLab({ draft }: ScenarioLabProps) {
 
   const result = useMemo(() => runScenario(scenario, draft), [scenario, draft]);
   const appearance = getStageAppearance(result.assessment.nextStage);
+  const riskSymbol = draft.primaryAssetId.toUpperCase();
+  const stableSymbol = draft.stableAssetId.toUpperCase();
 
   return (
     <div className="glass-panel overflow-hidden">
@@ -107,7 +109,7 @@ export function ScenarioLab({ draft }: ScenarioLabProps) {
               />
             </label>
             <label className="space-y-2">
-              <span className="eyebrow">ADA price / EMA</span>
+              <span className="eyebrow">{riskSymbol} price / EMA</span>
               <div className="grid grid-cols-2 gap-3">
                 <input
                   type="number"
@@ -165,7 +167,7 @@ export function ScenarioLab({ draft }: ScenarioLabProps) {
               </div>
             </label>
             <label className="space-y-2">
-              <span className="eyebrow">ADA amount</span>
+              <span className="eyebrow">{riskSymbol} amount</span>
               <input
                 type="number"
                 value={scenario.adaAmount}
@@ -179,7 +181,7 @@ export function ScenarioLab({ draft }: ScenarioLabProps) {
               />
             </label>
             <label className="space-y-2">
-              <span className="eyebrow">Stable amount</span>
+              <span className="eyebrow">{stableSymbol} amount</span>
               <input
                 type="number"
                 value={scenario.stableAmount}
@@ -290,7 +292,7 @@ export function ScenarioLab({ draft }: ScenarioLabProps) {
             <div className="rounded-2xl border border-line bg-bg-soft p-4">
               <p className="eyebrow">Reference target</p>
               <p className="mt-2 text-lg font-semibold text-text">
-                {result.referenceTargetAda.toLocaleString()} ADA
+                {result.referenceTargetAda.toLocaleString()} {riskSymbol}
               </p>
               <p className="mt-1 text-sm text-text-secondary">
                 Equivalent to {draft.targetOunces} oz of {draft.referenceSymbol} at ${scenario.xauUsd}.

@@ -14,7 +14,7 @@ import { runtimeAvailability } from "@/lib/runtime";
 interface VaultBootstrapLabProps {
   draft: VaultBootstrapDraft;
   setDraft: Dispatch<SetStateAction<VaultBootstrapDraft>>;
-  currentAdaPrice: number;
+  currentRiskPrice: number;
   currentReferencePrice?: number;
 }
 
@@ -65,7 +65,7 @@ const inputClassName =
 export function VaultBootstrapLab({
   draft,
   setDraft,
-  currentAdaPrice,
+  currentRiskPrice,
   currentReferencePrice,
 }: VaultBootstrapLabProps) {
   const liveReferenceAvailable =
@@ -75,7 +75,7 @@ export function VaultBootstrapLab({
   const targetAda = computeReferenceTargetAda(
     draft.targetOunces,
     draft.referencePrice,
-    currentAdaPrice,
+    currentRiskPrice,
   );
 
   return (
@@ -392,7 +392,7 @@ export function VaultBootstrapLab({
                       {draft.useReferenceTarget ? targetAda.toLocaleString() : "Disabled"}
                     </div>
                     <p className="mt-1 text-xs text-text-muted">
-                      Uses {draft.referenceSymbol} (${(currentReferencePrice ?? draft.referencePrice).toFixed(3)}) and RBTC (${currentAdaPrice.toFixed(3)}).
+                      Uses {draft.referenceSymbol} (${(currentReferencePrice ?? draft.referencePrice).toFixed(3)}) and RBTC (${currentRiskPrice.toFixed(3)}).
                     </p>
                     {liveReferenceAvailable && (
                       <p className="mt-1 text-xs text-accent">
@@ -408,7 +408,7 @@ export function VaultBootstrapLab({
           <div className="rounded-2xl border border-line bg-bg-soft p-4 text-sm text-text-secondary">
             <p className="font-semibold text-text">Current UI status</p>
             <ul className="mt-3 space-y-2">
-              <li>- Wallet connect is still in adaptation. Rootstock native, Squads, and Safe are modeled here for bootstrap planning.</li>
+              <li>- Wallet connect uses Beexo / EIP-1193 when available. Rootstock native, Squads, and Safe stay here as planning modes for treasury governance.</li>
               <li>- Policy editing is browser-side and feeds the simulator below.</li>
               <li>- Create-vault from frontend still needs EVM signer integration plus a real bootstrap tx builder.</li>
               <li>- {runtimeAvailability.warningBody}</li>

@@ -116,30 +116,30 @@ export const mockStrategyOptions: MockStrategyOption[] = [
   {
     id: "xau_target",
     label: "XAU target",
-    description: "Keep ADA exposure near a target number of gold ounces, while still honoring freeze and full-exit guardrails.",
+    description: "Keep RBTC exposure near a target number of gold ounces, while still honoring freeze and full-exit guardrails.",
   },
 ];
 
 export const mockDatasetOptions: MockDatasetOption[] = [
   {
     id: "ada_treasury_base",
-    label: "ADA treasury base",
+    label: "RBTC treasury base",
     description: "Normal volatility with one mid-cycle selloff and recovery.",
   },
   {
     id: "ada_flash_crash",
-    label: "ADA flash crash",
+    label: "RBTC flash crash",
     description: "Fast shock that should force partial and full defensive actions.",
   },
   {
     id: "stable_depeg",
     label: "Stable depeg",
-    description: "Stable rail drifts under $1 while ADA stays relatively calm.",
+    description: "Stable rail drifts under $1 while RBTC stays relatively calm.",
   },
   {
     id: "xau_rotation",
     label: "XAU rotation",
-    description: "Reference asset trend diverges from ADA and forces target rebalancing.",
+    description: "Reference asset trend diverges from RBTC and forces target rebalancing.",
   },
 ];
 
@@ -338,7 +338,7 @@ function applyExecution(
             minBuyAmount: buyAmount,
           };
           nextStage = "watch";
-          trigger = `${draft.referenceSymbol} target drift: ADA above target ounces`;
+          trigger = `${draft.referenceSymbol} target drift: RBTC above target units`;
         }
       } else {
         const stableSellAmount = Number((holdings.stableAmount * 0.18).toFixed(6));
@@ -351,7 +351,7 @@ function applyExecution(
             minBuyAmount: buyAmount,
           };
           nextStage = "watch";
-          trigger = `${draft.referenceSymbol} target drift: ADA below target ounces`;
+          trigger = `${draft.referenceSymbol} target drift: RBTC below target units`;
         }
       }
     }
@@ -378,8 +378,8 @@ function applyExecution(
         routeId: intent.routeId,
         sellAmount: Number(sellAmount.toFixed(6)),
         buyAmount: Number(buyAmount.toFixed(6)),
-        sourceSymbol: "ADA",
-        destinationSymbol: "USDM",
+        sourceSymbol: "RBTC",
+        destinationSymbol: "DOC",
         reason: trigger,
       },
     };
@@ -401,8 +401,8 @@ function applyExecution(
       routeId: intent.routeId,
       sellAmount: Number(stableSellAmount.toFixed(6)),
       buyAmount: Number(adaBuyAmount.toFixed(6)),
-      sourceSymbol: "USDM",
-      destinationSymbol: "ADA",
+      sourceSymbol: "DOC",
+      destinationSymbol: "RBTC",
       reason: trigger,
     },
   };
@@ -482,7 +482,7 @@ export function runMockBacktest(
       stableRatio: Number(currentStableRatio.toFixed(4)),
       trigger: step.trigger,
       executionLabel: step.execution
-        ? `${step.execution.kind === "derisk_swap" ? "Sell ADA" : "Buy ADA"} via ${step.execution.routeId}`
+        ? `${step.execution.kind === "derisk_swap" ? "Sell RBTC" : "Buy RBTC"} via ${step.execution.routeId}`
         : undefined,
     });
   }
