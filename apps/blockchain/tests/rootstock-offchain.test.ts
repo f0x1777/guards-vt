@@ -143,6 +143,14 @@ describe("rootstock protocol adapters", () => {
         }),
       ),
     ).toThrow(/minReceive/i);
+
+    expect(() =>
+      moneyOnChainAdapter.prepare(
+        buildIntent({
+          amount: "0".repeat(79),
+        }),
+      ),
+    ).toThrow(/positive integer amount/i);
   });
 
   it("prepares executable Money on Chain mint calls for RBTC -> DOC", () => {

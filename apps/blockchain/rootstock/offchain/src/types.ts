@@ -51,9 +51,28 @@ export interface ProtocolAdapter {
 }
 
 const ROOTSTOCK_TESTNET_CHAIN_ID = 31;
+const UINT256_MAX_DEC =
+  "115792089237316195423570985008687907853269984665640564039457584007913129639935";
 
 function isPositiveIntegerString(value: string): boolean {
-  return /^\d+$/.test(value) && BigInt(value) > 0n;
+  if (!/^\d+$/.test(value)) {
+    return false;
+  }
+
+  const normalized = value.replace(/^0+/, "");
+  if (normalized.length === 0) {
+    return false;
+  }
+
+  if (normalized.length > UINT256_MAX_DEC.length) {
+    return false;
+  }
+
+  if (normalized.length < UINT256_MAX_DEC.length) {
+    return true;
+  }
+
+  return normalized <= UINT256_MAX_DEC;
 }
 
 export function validateIntentForAdapter(
