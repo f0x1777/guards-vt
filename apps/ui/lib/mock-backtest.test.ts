@@ -62,7 +62,7 @@ describe("runMockBacktest", () => {
     expect(first.executions).toEqual(second.executions);
   });
 
-  it("buys ADA when XAU target drift leaves the treasury underweight", () => {
+  it("buys RBTC when XAU target drift leaves the treasury underweight", () => {
     const result = runMockBacktest(draft, {
       strategy: "xau_target",
       dataset: "xau_rotation",
@@ -71,7 +71,7 @@ describe("runMockBacktest", () => {
     const firstExecution = result.executions[0];
     expect(firstExecution).toBeDefined();
     expect(firstExecution?.kind).toBe("reentry_swap");
-    expect(firstExecution?.sourceSymbol).toBe("USDM");
-    expect(firstExecution?.destinationSymbol).toBe("ADA");
+    expect(firstExecution?.sourceSymbol).toBe("DOC");
+    expect(firstExecution?.destinationSymbol).toBe("RBTC");
   });
 });

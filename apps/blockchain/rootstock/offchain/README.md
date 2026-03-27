@@ -32,5 +32,5 @@ A credible automation model on Rootstock is:
 
 ## Files
 - `src/types.ts`: common types for bounded treasury action intents
-- `src/money-on-chain.ts`: first adapter scaffold
+- `src/money-on-chain.ts`: first live adapter, preparing `mintDoc` / `redeemFreeDoc` calldata
 - `src/sovryn.ts`: alternate adapter scaffold

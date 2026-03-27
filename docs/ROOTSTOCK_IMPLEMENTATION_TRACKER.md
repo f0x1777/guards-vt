@@ -35,6 +35,11 @@ Suggested methods:
 - `executeTransfer(...)`
 - `withdraw(...)`
 
+Current status:
+- bounded `RBTC` and ERC20 transfer execution is live
+- replay protection via `referenceId` is live
+- Foundry test coverage validates positive and negative execution paths
+
 ## First Demo Candidate
 
 1. Connect Beexo wallet.
