@@ -214,6 +214,7 @@ function buildReferencePrice(
   }
 
   if (baseReferencePrice > 20) {
+    // 0.2% sinusoidal noise; +0.5% flat xau-rotation bias; +6% upward trend over the window
     const rotationBias = dataset === "xau_rotation" ? baseReferencePrice * 0.005 : 0;
     return baseReferencePrice * (1 + progress * 0.06) + Math.sin(index / 13) * (baseReferencePrice * 0.002) + rotationBias;
   }
