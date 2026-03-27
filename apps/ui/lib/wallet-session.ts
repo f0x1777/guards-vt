@@ -180,10 +180,4 @@ export async function connectWallet(option: WalletConnectionOption): Promise<Wal
   return (await connectInjectedEvmWalletSession()) ?? createMockWalletSession();
 }
 
-export async function connectPreferredWallet(): Promise<WalletSession> {
-  return (
-    (await connectBeexoWalletSession()) ??
-    (await connectInjectedEvmWalletSession()) ??
-    createMockWalletSession()
-  );
-}
+
