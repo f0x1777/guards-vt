@@ -30,6 +30,7 @@ export function RuntimeControlPanel({
   setWalletSession,
 }: RuntimeControlPanelProps) {
   const [evmDetected, setEvmDetected] = useState(false);
+  const [beexoAvailable, setBeexoAvailable] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -38,6 +39,7 @@ export function RuntimeControlPanel({
 
     const availability = detectWalletAvailability();
     setEvmDetected(availability.evm);
+    setBeexoAvailable(availability.beexo);
   }, []);
 
   return (
@@ -135,6 +137,7 @@ export function RuntimeControlPanel({
             <div className="rounded-2xl border border-line bg-bg-soft p-4 text-left md:col-span-2">
               <p className="text-sm font-semibold text-text">Beexo / EVM connector</p>
               <div className="mt-2 space-y-1 text-xs text-text-muted">
+                <p>Beexo available: {beexoAvailable ? "yes" : "no"}</p>
                 <p>EVM provider detected: {evmDetected ? "yes" : "no"}</p>
                 <p>Top-right connect opens a wallet selector for Beexo, existing EIP-1193 wallets, or the demo wallet.</p>
                 <p>If no provider is available, you can still run the full product flow in demo mode.</p>

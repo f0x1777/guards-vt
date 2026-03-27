@@ -36,7 +36,6 @@ import {
 import {
   connectWallet,
   detectWalletAvailability,
-  connectPreferredWallet,
   hydrateStoredWalletSession,
   persistWalletSession,
   type WalletConnectionOption,
@@ -54,6 +53,7 @@ import {
   applyProfileToDraft,
   companyVaultProfiles,
 } from "@/lib/company-profiles";
+import { type TreasuryActionKind } from "@/components/treasury-actions-panel";
 
 const sectionTransition = {
   initial: { opacity: 0, y: 20 },
@@ -196,7 +196,8 @@ export default function Dashboard() {
   const ladderStep: RiskLadderStep = data.vault.ladderStep ?? data.vault.stage;
 
   async function handleConnectWallet() {
-    setEvmDetected(detectWalletAvailability().evm);
+    const availability = detectWalletAvailability();
+    setEvmDetected(availability.evm);
     setWalletModalOpen(true);
   }
 
@@ -207,10 +208,7 @@ export default function Dashboard() {
 
     setConnectingWallet(true);
     try {
-      const session =
-        option === "beexo" || option === "browser_evm" || option === "mock"
-          ? await connectWallet(option)
-          : await connectPreferredWallet();
+      const session = await connectWallet(option);
       setWalletSession(session);
       setWalletModalOpen(false);
     } finally {
@@ -218,9 +216,7 @@ export default function Dashboard() {
     }
   }
 
-  function handleTreasuryAction(
-    kind: "send" | "withdraw" | "bridge" | "onramp" | "offramp",
-  ) {
+  function handleTreasuryAction(kind: TreasuryActionKind) {
     const labelMap: Record<typeof kind, string> = {
       send: "Send",
       withdraw: "Withdraw",
@@ -237,7 +233,7 @@ export default function Dashboard() {
     }
 
     setTreasuryActionMessage(
-      `${label} flow staged for ${walletSession.label} on ${activeProfile.companyName} · ${bootstrapDraft.vaultName}. Governance model ${activeProfile.thresholdLabel}, route ${bootstrapDraft.approvedRouteId}. On-chain tx wiring is the next step.`,
+      `${label} flow staged for ${walletSession.label} on ${activeProfile.companyName} · ${bootstrapDraft.vaultName}. Governance model ${activeProfile.governanceModel} (${activeProfile.thresholdLabel}), route ${bootstrapDraft.approvedRouteId}. On-chain tx wiring is the next step.`,
     );
   }
 
@@ -478,7 +474,7 @@ export default function Dashboard() {
                 currentPrice={data.oracle.price}
                 oracleFreshness={data.metrics.oracleFreshness}
                 haircutBps={policyView.haircutBps}
-                routeLabel={bootstrapDraft.approvedRouteId}
+                routeId={bootstrapDraft.approvedRouteId}
               />
             </motion.section>
           )}
