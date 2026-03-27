@@ -35,6 +35,12 @@ export function CTASection() {
         </FadeUp>
 
         <FadeUp delay={0.3}>
+          <div className="mx-auto mb-5 flex max-w-3xl items-center justify-center">
+            <div className="rounded-full border border-[#f0bf5f]/25 bg-[#f0bf5f]/10 px-4 py-2 text-xs font-medium text-[#f0bf5f]">
+              Rootstock testnet only. Choose whether to preview the demo or connect a Beexo wallet to operate.
+            </div>
+          </div>
+
           <div className="mx-auto grid max-w-4xl gap-4 text-left md:grid-cols-2">
             <a
               href="/dashboard?entry=mock&section=overview"
@@ -42,10 +48,10 @@ export function CTASection() {
             >
               <p className="eyebrow">Open Demo</p>
               <h3 className="mt-3 text-2xl font-semibold text-white">
-                View with mock data
+                Preview demo
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-white/55">
-                See the interface instantly with a seeded treasury, live market quotes,
+                See the interface instantly with seeded treasury data, live market quotes,
                 and a product-safe walkthrough of the full operating surface.
               </p>
               <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-white">
@@ -60,14 +66,14 @@ export function CTASection() {
             >
               <p className="eyebrow">Open Demo</p>
               <h3 className="mt-3 text-2xl font-semibold text-white">
-                Connect wallet
+                Connect Beexo wallet
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-white/55">
-                Connect an operator wallet, jump into the policy flow, and start
-                shaping the treasury configuration from the real Rootstock surface.
+                Use a Rootstock testnet operator wallet, jump into the policy flow,
+                and start shaping the treasury configuration from the real operating surface.
               </p>
               <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-white">
-                Create treasury
+                Operate on testnet
                 <ArrowRight className="h-4 w-4" />
               </div>
             </a>
