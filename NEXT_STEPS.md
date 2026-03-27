@@ -37,11 +37,11 @@ This is the canonical tracker for the Rootstock / Beexo derivation of Guards.
 - [ ] Validate a demonstrable Beexo flow in the final demo
 
 ## Treasury UX / Product
-- [ ] Keep the company / vault profile model
-- [ ] Keep treasury actions: send, withdraw, bridge, on/off ramp
-- [ ] Turn disabled treasury actions into real staged flows where possible
-- [ ] Add vault administration / multisig member management UI for the Rootstock version
-- [ ] Define whether one wallet can manage multiple company vaults in the MVP
+- [x] Keep the company / vault profile model
+- [x] Keep treasury actions: send, withdraw, bridge, on/off ramp
+- [x] Turn disabled treasury actions into real staged flows where possible
+- [x] Add vault administration / multisig member management UI for the Rootstock version
+- [x] Define whether one wallet can manage multiple company vaults in the MVP
 
 ## DeFi Integrations
 - [x] Scaffold protocol adapter surfaces for Money on Chain and Sovryn
