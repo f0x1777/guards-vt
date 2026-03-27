@@ -18,15 +18,15 @@ describe("vault lab helpers", () => {
     const draft = buildBootstrapDraft(demoState.policy);
     const ready = buildBootstrapChecklist(draft);
 
-    expect(ready.every((item) => item.ready)).toBe(true);
+    expect(ready.find((item) => item.id === "governance-wallet")?.ready).toBe(false);
+    expect(ready.find((item) => item.id === "hot-wallet")?.ready).toBe(false);
 
     const incomplete = buildBootstrapChecklist({
       ...draft,
-      governanceWallet: "",
+      governanceWallet: "0x00000000000000000000000000000000000000A1",
+      executionHotWallet: "0x00000000000000000000000000000000000000B2",
     });
-    expect(incomplete.find((item) => item.id === "governance-wallet")?.ready).toBe(
-      false,
-    );
+    expect(incomplete.every((item) => item.ready)).toBe(true);
   });
 
   it("flags invalid re-entry hysteresis in the checklist", () => {
