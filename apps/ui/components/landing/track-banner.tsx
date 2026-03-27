@@ -23,7 +23,7 @@ export function TrackBanner() {
       <div className="relative mx-auto flex max-w-7xl flex-col items-center gap-6 px-6 text-center lg:px-12">
         <FadeUp>
           <p className="font-mono text-xs font-medium uppercase tracking-[0.34em] text-white/35 md:text-sm">
-            Adapting for
+            Built for
           </p>
         </FadeUp>
 
@@ -40,8 +40,8 @@ export function TrackBanner() {
 
         <FadeUp delay={0.16}>
           <p className="max-w-2xl text-sm leading-relaxed text-white/38 md:text-base">
-            Same treasury-control product direction, now reframed for Bitcoin DeFi on Rootstock and frictionless
-            wallet onboarding for LATAM users through Beexo Connect.
+            Treasury control on Rootstock with Beexo-powered wallet onboarding, bounded execution, and Bitcoin DeFi
+            integrations that are explicit enough to operate and explain.
           </p>
         </FadeUp>
       </div>

@@ -65,7 +65,7 @@ const sectionTransition = {
 export default function Dashboard() {
   const [activeSection, setActiveSection] = useState("overview");
   const [mode, setMode] = useState<DashboardMode>("mock");
-  const [dataset, setDataset] = useState<MockDatasetId>("ada_treasury_base");
+  const [dataset, setDataset] = useState<MockDatasetId>("ada_flash_crash");
   const [activeProfileId, setActiveProfileId] = useState(companyVaultProfiles[0]?.id ?? "");
   const [walletSession, setWalletSession] = useState<WalletSession | null>(null);
   const [connectingWallet, setConnectingWallet] = useState(false);
@@ -427,7 +427,20 @@ export default function Dashboard() {
           {activeSection === "risk" && (
             <motion.section key="risk" {...sectionTransition} className="space-y-6 mb-8">
               {mode === "mock" ? (
-                <HistoricalStrategyLab draft={bootstrapDraft} dataset={dataset} />
+                <HistoricalStrategyLab
+                  draft={bootstrapDraft}
+                  dataset={dataset}
+                  positions={data.positions}
+                  currentRiskPrice={data.oracle.price}
+                  currentReferencePrice={liveReferencePriceForSymbol(
+                    liveQuotes ?? {},
+                    bootstrapDraft.referenceSymbol,
+                    {
+                      maxStaleUs: demoState.policy.maxStaleUs,
+                      maxConfidenceBps: demoState.policy.maxConfidenceBps,
+                    },
+                  )}
+                />
               ) : (
                 <SimulationReplay frames={data.frames ?? []} />
               )}

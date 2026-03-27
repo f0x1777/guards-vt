@@ -12,7 +12,6 @@
     "start": "next start"
   },
   "dependencies": {
-    "@pythnetwork/pyth-lazer-sdk": "^6.2.1",
     "framer-motion": "^12.38.0",
     "hls.js": "^1.6.15",
     "lucide-react": "^0.577.0",
