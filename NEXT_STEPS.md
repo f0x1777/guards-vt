@@ -20,13 +20,14 @@ This is the canonical tracker for the Rootstock / Beexo derivation of Guards.
 - [x] Create `apps/blockchain/rootstock/contracts`
 - [x] Add an initial Foundry scaffold for Rootstock
 - [x] Add guardrail-focused Foundry tests for the first contract scaffold
-- [ ] Install Foundry in the real dev environment and validate the scaffold
+- [x] Install Foundry in the real dev environment and validate the scaffold
+- [x] Keep the Foundry vendor footprint minimal and ignore generated artifacts
 - [ ] Deploy at least one contract on Rootstock testnet
 - [ ] Document deployed addresses and networks
 
 ## Beexo Connect Track
 - [x] Install and integrate `xo-connect`
-- [x] Add a first Beexo / EIP-1193 Rootstock wallet scaffold in the UI
+- [x] Replace demo-only wallet flows with Beexo-first EIP-1193 connection
 - [ ] Add wallet onboarding flow for LATAM-oriented users
 - [ ] Show connected wallet state in the dashboard and landing CTA
 - [ ] Validate a demonstrable Beexo flow in the final demo
