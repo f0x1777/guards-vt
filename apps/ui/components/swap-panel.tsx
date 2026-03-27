@@ -40,7 +40,7 @@ export function SwapPanel({
       <div className="px-5 py-4 border-b border-line">
         <h3 className="text-sm font-semibold text-text">Swap</h3>
         <p className="text-xs text-text-muted mt-1">
-          Policy-gated execution through approved routes
+          Protected swap sizing through the approved treasury route.
         </p>
       </div>
 

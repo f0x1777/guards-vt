@@ -39,10 +39,10 @@ export function ExecutionTimeline({
       <div className="px-5 py-4 border-b border-line flex items-center justify-between">
         <div>
           <h3 className="text-sm font-semibold text-text">
-            History
+            Treasury History
           </h3>
           <p className="text-xs text-text-muted mt-1">
-            Recent protective swaps and staged treasury actions.
+            Recent swaps and staged treasury actions for the active vault.
           </p>
         </div>
         <span className="chip-blue">{events.length} events</span>

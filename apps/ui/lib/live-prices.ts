@@ -16,6 +16,60 @@ interface OracleGuardrails {
   maxConfidenceBps: number;
 }
 
+function fallbackStablePrice(): number {
+  return 1;
+}
+
+function baseOracleForState(
+  state: DemoState,
+  quotes: LiveQuoteMap,
+): OracleSnapshot {
+  const riskQuote =
+    (state.policy.primaryAssetId === "rbtc" ? quotes.rbtc : undefined) ??
+    (state.policy.primaryAssetId === "ada" ? quotes.ada : undefined) ??
+    quotes.rbtc ??
+    quotes.ada;
+
+  if (!riskQuote) {
+    return state.oracle;
+  }
+
+  const nowMs = Date.now();
+  if (!quotePassesGuardrails(riskQuote, state.policy, nowMs)) {
+    return state.oracle;
+  }
+
+  return riskQuote;
+}
+
+function positionPrice(
+  state: DemoState,
+  position: DemoState["positions"][number],
+  oracle: OracleSnapshot,
+): number {
+  if (position.assetId === state.policy.primaryAssetId || position.role === "risk") {
+    return oracle.price;
+  }
+
+  return fallbackStablePrice();
+}
+
+function revalueFrames(
+  frames: DemoState["frames"],
+  baseDisplayValue: number,
+  nextDisplayValue: number,
+): DemoState["frames"] {
+  if (!frames || frames.length === 0 || baseDisplayValue <= 0 || nextDisplayValue <= 0) {
+    return frames;
+  }
+
+  const multiplier = nextDisplayValue / baseDisplayValue;
+  return frames.map((frame) => ({
+    ...frame,
+    balance: Number((frame.balance * multiplier).toFixed(2)),
+  }));
+}
+
 function formatOracleFreshness(nowMs: number, updatedAtMs: number): string {
   const seconds = Math.max(0, Math.round((nowMs - updatedAtMs) / 1000));
   if (seconds < 60) {
@@ -68,68 +122,45 @@ export function applyLiveQuotesToDemoState(
   state: DemoState,
   quotes: LiveQuoteMap,
 ): DemoState {
-  const riskQuote =
-    (state.policy.primaryAssetId === "rbtc" ? quotes.rbtc : undefined) ??
-    (state.policy.primaryAssetId === "ada" ? quotes.ada : undefined) ??
-    quotes.rbtc ??
-    quotes.ada;
-  if (!riskQuote) {
-    return state;
-  }
-
   const nowMs = Date.now();
-  if (!quotePassesGuardrails(riskQuote, state.policy, nowMs)) {
-    return state;
-  }
+  const oracle = baseOracleForState(state, quotes);
+  const baseDisplayValue = state.positions.reduce((sum, position) => sum + position.fiatValue, 0);
 
-  const stablePosition = state.positions.find((position) => position.role === "stable");
-  const riskPosition = state.positions.find((position) => position.role === "risk");
-
-  if (!riskPosition) {
+  const nextPositions = state.positions.map((position) => {
+    const price = positionPrice(state, position, oracle);
     return {
-      ...state,
-      nowMs,
-      oracle: riskQuote,
-      metrics: {
-        ...state.metrics,
-        drawdownBps: computeDrawdownBps(riskQuote.price, riskQuote.emaPrice),
-        oracleFreshness: formatOracleFreshness(nowMs, riskQuote.updatedAtMs),
-      },
+      ...position,
+      fiatValue: Number((position.amount * price).toFixed(2)),
+      weight: 0,
     };
-  }
+  });
 
-  const stableFiatValue = stablePosition?.fiatValue ?? 0;
-  const riskFiatValue = riskPosition.amount * riskQuote.price;
+  const totalDisplayValue = nextPositions.reduce((sum, position) => sum + position.fiatValue, 0);
+  const stableFiatValue = nextPositions
+    .filter((position) => position.role === "stable")
+    .reduce((sum, position) => sum + position.fiatValue, 0);
+  const riskFiatValue = nextPositions
+    .filter((position) => position.role === "risk")
+    .reduce((sum, position) => sum + position.fiatValue, 0);
   const liquidRiskValue = riskFiatValue * (1 - state.policy.haircutBps / 10_000);
   const liquidValue = liquidRiskValue + stableFiatValue;
   const stableRatio = liquidValue <= 0 ? 0 : stableFiatValue / liquidValue;
-  const totalDisplayValue = riskFiatValue + stableFiatValue;
 
   return {
     ...state,
     nowMs,
-    oracle: riskQuote,
-    positions: state.positions.map((position) => {
-      if (position.role === "risk") {
-        const fiatValue = position.amount * riskQuote.price;
-        return {
-          ...position,
-          fiatValue,
-          weight: totalDisplayValue <= 0 ? 0 : fiatValue / totalDisplayValue,
-        };
-      }
-
-      return {
-        ...position,
-        weight: totalDisplayValue <= 0 ? 0 : position.fiatValue / totalDisplayValue,
-      };
-    }),
+    oracle,
+    positions: nextPositions.map((position) => ({
+      ...position,
+      weight: totalDisplayValue <= 0 ? 0 : position.fiatValue / totalDisplayValue,
+    })),
     metrics: {
       liquidValue,
       stableRatio,
-      drawdownBps: computeDrawdownBps(riskQuote.price, riskQuote.emaPrice),
-      oracleFreshness: formatOracleFreshness(nowMs, riskQuote.updatedAtMs),
+      drawdownBps: computeDrawdownBps(oracle.price, oracle.emaPrice),
+      oracleFreshness: formatOracleFreshness(nowMs, oracle.updatedAtMs),
     },
+    frames: revalueFrames(state.frames, baseDisplayValue, totalDisplayValue),
   };
 }
 
@@ -139,16 +170,16 @@ export function liveReferencePriceForSymbol(
   guardrails?: OracleGuardrails,
 ): number | undefined {
   const quote = (() => {
-  switch (symbol) {
-    case "XAU/USD":
+    switch (symbol) {
+      case "XAU/USD":
         return quotes.xau;
-    case "BTC/USD":
+      case "BTC/USD":
         return quotes.btc;
-    case "SOL/USD":
+      case "SOL/USD":
         return quotes.sol;
-    case "EUR/USD":
+      case "EUR/USD":
         return quotes.eur;
-    default:
+      default:
         return undefined;
     }
   })();

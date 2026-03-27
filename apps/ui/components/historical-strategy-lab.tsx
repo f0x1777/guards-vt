@@ -11,11 +11,15 @@ import {
   type MockBacktestPoint,
   type MockStrategyId,
 } from "@/lib/mock-backtest";
+import type { TreasuryPosition } from "@/lib/types";
 import type { VaultBootstrapDraft } from "@/lib/vault-lab";
 
 interface HistoricalStrategyLabProps {
   draft: VaultBootstrapDraft;
   dataset: MockDatasetId;
+  positions: TreasuryPosition[];
+  currentRiskPrice: number;
+  currentReferencePrice?: number;
 }
 
 function Chart({
@@ -83,11 +87,19 @@ function Chart({
   );
 }
 
-export function HistoricalStrategyLab({ draft, dataset }: HistoricalStrategyLabProps) {
+export function HistoricalStrategyLab({
+  draft,
+  dataset,
+  positions,
+  currentRiskPrice,
+  currentReferencePrice,
+}: HistoricalStrategyLabProps) {
   const [strategy, setStrategy] = useState<MockStrategyId>("guards_ladder");
   const [activeIndex, setActiveIndex] = useState(0);
   const [autoplay, setAutoplay] = useState(false);
   const riskSymbol = draft.primaryAssetId.toUpperCase();
+  const riskPosition = positions.find((position) => position.role === "risk");
+  const stablePosition = positions.find((position) => position.role === "stable");
 
   const result = useMemo(
     () =>
@@ -97,8 +109,15 @@ export function HistoricalStrategyLab({ draft, dataset }: HistoricalStrategyLabP
         days: 7,
         intervalMinutes: 15,
         referenceSymbol: draft.referenceSymbol,
+        riskBasePrice: currentRiskPrice,
+        referenceBasePrice: currentReferencePrice ?? draft.referencePrice,
+        stableBasePrice: stablePosition && stablePosition.amount > 0
+          ? stablePosition.fiatValue / stablePosition.amount
+          : 1,
+        initialRiskAmount: riskPosition?.amount ?? 0,
+        initialStableAmount: stablePosition?.amount ?? 0,
       }),
-    [dataset, draft, strategy],
+    [currentReferencePrice, currentRiskPrice, dataset, draft, positions, strategy],
   );
 
   const activePoint = result.points[activeIndex] ?? result.points[0] ?? null;

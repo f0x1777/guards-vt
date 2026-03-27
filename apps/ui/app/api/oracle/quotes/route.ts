@@ -1,274 +1,227 @@
-import {
-  PythLazerClient,
-  type Channel,
-  type SymbolResponse,
-} from "@pythnetwork/pyth-lazer-sdk";
 import { NextResponse } from "next/server";
-import path from "node:path";
-import { config as loadDotenv } from "dotenv";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-loadDotenv({ path: path.resolve(process.cwd(), ".env"), quiet: true });
-loadDotenv({ path: path.resolve(process.cwd(), "..", "..", ".env"), quiet: true });
+const REQUEST_TIMEOUT_MS = 5_000;
+const QUOTE_CACHE_TTL_MS = 25_000;
+const EMA_SMOOTHING_WINDOW_MS = 30 * 60 * 1000;
 
-interface QuoteRequest {
-  key: string;
+interface MarketQuote {
   feedId: string;
   symbol: string;
-  symbolQuery: string;
+  price: number;
+  emaPrice: number;
+  confidence: number;
+  updatedAtMs: number;
+  publisherCount?: number;
 }
 
-interface ParsedPriceFeed {
-  priceFeedId: number;
-  price?: number | string;
-  emaPrice?: number | string;
-  confidence?: number | string;
-  exponent?: number | string;
-  feedUpdateTimestamp?: number | string;
-  publisherCount?: number | null;
+interface CoinGeckoSimplePriceResponse {
+  bitcoin?: { usd?: number };
+  solana?: { usd?: number };
 }
 
-const QUOTES: QuoteRequest[] = [
-  {
-    key: "rbtc",
-    feedId: "pyth-rbtc-usd",
-    symbol: "RBTC/USD",
-    symbolQuery: "BTC/USD",
-  },
-  {
-    key: "xau",
-    feedId: "pyth-xau-usd",
-    symbol: "XAU/USD",
-    symbolQuery: "XAU/USD",
-  },
-  {
-    key: "btc",
-    feedId: "pyth-btc-usd",
-    symbol: "BTC/USD",
-    symbolQuery: "BTC/USD",
-  },
-  {
-    key: "sol",
-    feedId: "pyth-sol-usd",
-    symbol: "SOL/USD",
-    symbolQuery: "SOL/USD",
-  },
-  {
-    key: "eur",
-    feedId: "pyth-eur-usd",
-    symbol: "EUR/USD",
-    symbolQuery: "EUR/USD",
-  },
-];
-
-let cachedClientInstance: PythLazerClient | null = null;
-let cachedClientPromise: Promise<PythLazerClient> | null = null;
-const cachedPriceFeedIds = new Map<string, number>();
-
-function readString(name: string, fallback = ""): string {
-  const value = process.env[name];
-  return typeof value === "string" && value.length > 0 ? value : fallback;
+interface GoldApiResponse {
+  price?: number;
+  updatedAt?: string;
 }
 
-function normalizeSymbol(value: string): string {
-  return value.replace(/[^a-z0-9]/gi, "").toLowerCase();
+interface FrankfurterResponse {
+  rates?: {
+    USD?: number;
+  };
 }
 
-function parseRequiredNumber(
-  value: number | string | undefined,
-  field: string,
-): number {
-  const parsed = typeof value === "string" ? Number(value) : value;
-  if (!Number.isFinite(parsed)) {
-    throw new Error(`Pyth update is missing numeric field ${field}`);
-  }
-
-  return parsed as number;
+interface QuotesResponseBody {
+  ok: boolean;
+  source: "market_live";
+  quotes: Partial<{
+    rbtc: MarketQuote;
+    btc: MarketQuote;
+    sol: MarketQuote;
+    xau: MarketQuote;
+    eur: MarketQuote;
+  }>;
+  sourceErrors?: string[];
 }
 
-function toDecimal(value: number, exponent: number): number {
-  return value * 10 ** exponent;
+interface QuoteCacheEntry {
+  expiresAtMs: number;
+  body: QuotesResponseBody;
 }
 
-function normalizeTimestampUs(value: number): number {
-  if (value >= 1_000_000_000_000_000) {
-    return Math.trunc(value);
-  }
-
-  if (value >= 1_000_000_000_000) {
-    return Math.trunc(value * 1_000);
-  }
-
-  if (value >= 1_000_000_000) {
-    return Math.trunc(value * 1_000_000);
-  }
-
-  return Math.trunc(value);
+interface EmaCacheEntry {
+  emaPrice: number;
+  updatedAtMs: number;
 }
 
-function selectBestSymbolMatch(
-  matches: SymbolResponse[],
-  query: string,
-): SymbolResponse | undefined {
-  const normalized = normalizeSymbol(query);
-  const exact = matches.find((candidate) => {
-    const fields = [candidate.symbol, candidate.name, candidate.description].map(normalizeSymbol);
-    return fields.includes(normalized);
+let quoteCache: QuoteCacheEntry | null = null;
+let pendingQuotePromise: Promise<QuotesResponseBody> | null = null;
+const emaCache = new Map<string, EmaCacheEntry>();
+
+async function fetchJson<T>(url: string): Promise<T> {
+  const response = await fetch(url, {
+    method: "GET",
+    cache: "no-store",
+    headers: {
+      accept: "application/json",
+    },
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
-  if (exact) {
-    return exact;
+
+  if (!response.ok) {
+    throw new Error(`Market data request failed (${response.status}) for ${url}`);
   }
 
-  return matches.find((candidate) => normalizeSymbol(candidate.symbol).includes(normalized));
+  return (await response.json()) as T;
 }
 
-function findParsedFeed(
-  feeds: ParsedPriceFeed[] | undefined,
-  priceFeedId: number,
-): ParsedPriceFeed {
-  const feed = feeds?.find((candidate) => candidate.priceFeedId === priceFeedId);
-  if (!feed) {
-    throw new Error(`Pyth response did not include parsed payload for feed ${priceFeedId}`);
-  }
-
-  return feed;
+function finiteOrNull(value: number | undefined): number | null {
+  return Number.isFinite(value) && value !== undefined ? value : null;
 }
 
-function getClient(): Promise<PythLazerClient> {
-  const pythApiKey = readString("PYTH_API_KEY");
-  if (!pythApiKey) {
-    throw new Error("PYTH_API_KEY is not configured on the server runtime.");
+function nextEmaPrice(feedId: string, price: number, updatedAtMs: number): number {
+  const previous = emaCache.get(feedId);
+  if (!previous || updatedAtMs <= previous.updatedAtMs) {
+    emaCache.set(feedId, {
+      emaPrice: price,
+      updatedAtMs,
+    });
+    return price;
   }
 
-  if (cachedClientInstance) {
-    return Promise.resolve(cachedClientInstance);
-  }
-
-  if (!cachedClientPromise) {
-    cachedClientPromise = PythLazerClient.create({
-      token: pythApiKey,
-      webSocketPoolConfig: {},
-      ...(readString("PYTH_METADATA_SERVICE_URL")
-        ? { metadataServiceUrl: readString("PYTH_METADATA_SERVICE_URL") }
-        : {}),
-      ...(readString("PYTH_PRICE_SERVICE_URL")
-        ? { priceServiceUrl: readString("PYTH_PRICE_SERVICE_URL") }
-        : {}),
-    })
-      .then((client) => {
-        cachedClientInstance = client;
-        return client;
-      })
-      .catch((error) => {
-        cachedClientPromise = null;
-        throw error;
-      });
-  }
-
-  return cachedClientPromise;
+  const elapsedMs = Math.max(1, updatedAtMs - previous.updatedAtMs);
+  const alpha = 1 - Math.exp(-elapsedMs / EMA_SMOOTHING_WINDOW_MS);
+  const emaPrice = Number(
+    (previous.emaPrice + (price - previous.emaPrice) * alpha).toFixed(6),
+  );
+  emaCache.set(feedId, {
+    emaPrice,
+    updatedAtMs,
+  });
+  return emaPrice;
 }
 
-async function resolvePriceFeedId(
-  client: PythLazerClient,
-  quote: QuoteRequest,
-): Promise<number> {
-  const cached = cachedPriceFeedIds.get(quote.symbolQuery);
-  if (cached != null) {
-    return cached;
-  }
-
-  const matches = await client.getSymbols({ query: quote.symbolQuery });
-  const match = selectBestSymbolMatch(matches, quote.symbolQuery);
-  if (!match) {
-    throw new Error(`Unable to resolve a Pyth Lazer price feed for ${quote.symbolQuery}`);
-  }
-
-  cachedPriceFeedIds.set(quote.symbolQuery, match.pyth_lazer_id);
-  return match.pyth_lazer_id;
+function buildQuote(
+  feedId: string,
+  symbol: string,
+  price: number,
+  updatedAtMs: number,
+  confidenceRatio: number,
+): MarketQuote {
+  return {
+    feedId,
+    symbol,
+    price,
+    emaPrice: nextEmaPrice(feedId, price, updatedAtMs),
+    confidence: Number((price * confidenceRatio).toFixed(6)),
+    updatedAtMs,
+  };
 }
 
 export async function GET() {
-  if (!readString("PYTH_API_KEY")) {
-    return NextResponse.json(
-      { ok: false, error: "PYTH_API_KEY is not configured on the server runtime." },
-      { status: 503 },
-    );
+  const nowMs = Date.now();
+  if (quoteCache && quoteCache.expiresAtMs > nowMs) {
+    return NextResponse.json(quoteCache.body);
+  }
+
+  if (!pendingQuotePromise) {
+    pendingQuotePromise = (async () => {
+      const [coingeckoResult, goldResult, eurResult] = await Promise.allSettled([
+        fetchJson<CoinGeckoSimplePriceResponse>(
+          "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,solana&vs_currencies=usd",
+        ),
+        fetchJson<GoldApiResponse>("https://api.gold-api.com/price/XAU"),
+        fetchJson<FrankfurterResponse>("https://api.frankfurter.app/latest?from=EUR&to=USD"),
+      ]);
+
+      const sourceErrors: string[] = [];
+      const quotes: QuotesResponseBody["quotes"] = {};
+
+      if (coingeckoResult.status === "fulfilled") {
+        const coingecko = coingeckoResult.value;
+        const btcUsd = finiteOrNull(coingecko.bitcoin?.usd);
+        const solUsd = finiteOrNull(coingecko.solana?.usd);
+        if (btcUsd !== null) {
+          quotes.rbtc = buildQuote("market-rbtc-usd", "RBTC/USD", btcUsd, nowMs, 0.0012);
+          quotes.btc = buildQuote("market-btc-usd", "BTC/USD", btcUsd, nowMs, 0.0012);
+        } else {
+          sourceErrors.push("coingecko: missing bitcoin.usd (affects rbtc and btc quotes)");
+        }
+        if (solUsd !== null) {
+          quotes.sol = buildQuote("market-sol-usd", "SOL/USD", solUsd, nowMs, 0.0018);
+        } else {
+          sourceErrors.push("coingecko: missing solana.usd");
+        }
+      } else {
+        sourceErrors.push(
+          `coingecko: ${coingeckoResult.reason instanceof Error ? coingeckoResult.reason.message : "fetch failed"}`,
+        );
+      }
+
+      if (goldResult.status === "fulfilled") {
+        const gold = goldResult.value;
+        const xauUsd = finiteOrNull(gold.price);
+        if (xauUsd !== null) {
+          const goldUpdatedAtMs = (() => {
+            if (!gold.updatedAt) return nowMs;
+            const parsed = Date.parse(gold.updatedAt);
+            return Number.isFinite(parsed) ? parsed : nowMs;
+          })();
+          quotes.xau = buildQuote("market-xau-usd", "XAU/USD", xauUsd, goldUpdatedAtMs, 0.0008);
+        } else {
+          sourceErrors.push("gold-api: missing price");
+        }
+      } else {
+        sourceErrors.push(
+          `gold-api: ${goldResult.reason instanceof Error ? goldResult.reason.message : "fetch failed"}`,
+        );
+      }
+
+      if (eurResult.status === "fulfilled") {
+        const eur = eurResult.value;
+        const eurUsd = finiteOrNull(eur.rates?.USD);
+        if (eurUsd !== null) {
+          quotes.eur = buildQuote("market-eur-usd", "EUR/USD", eurUsd, nowMs, 0.0002);
+        } else {
+          sourceErrors.push("frankfurter: missing rates.USD");
+        }
+      } else {
+        sourceErrors.push(
+          `frankfurter: ${eurResult.reason instanceof Error ? eurResult.reason.message : "fetch failed"}`,
+        );
+      }
+
+      if (Object.keys(quotes).length === 0) {
+        throw new Error(`All market data sources failed: ${sourceErrors.join("; ")}`);
+      }
+
+      return {
+        ok: true,
+        source: "market_live",
+        quotes,
+        ...(sourceErrors.length > 0 && { sourceErrors }),
+      } satisfies QuotesResponseBody;
+    })();
   }
 
   try {
-    const client = await getClient();
-
-    const resolved = await Promise.all(
-      QUOTES.map(async (quote) => {
-        return {
-          ...quote,
-          priceFeedId: await resolvePriceFeedId(client, quote),
-        };
-      }),
-    );
-
-    const raw = await client.getLatestPrice({
-      channel: readString("PYTH_STREAM_CHANNEL", "fixed_rate@200ms") as Channel,
-      priceFeedIds: resolved.map((quote) => quote.priceFeedId),
-      properties: [
-        "price",
-        "emaPrice",
-        "confidence",
-        "publisherCount",
-        "exponent",
-        "feedUpdateTimestamp",
-      ],
-      formats: ["solana"],
-      parsed: true,
-      jsonBinaryEncoding: "hex",
-    });
-
-    const quotes = Object.fromEntries(
-      resolved.map((quote) => {
-        const parsed = findParsedFeed(raw.parsed?.priceFeeds, quote.priceFeedId);
-        const exponent = parseRequiredNumber(parsed.exponent, `${quote.symbol}.exponent`);
-        const updatedAtUs = normalizeTimestampUs(
-          parseRequiredNumber(parsed.feedUpdateTimestamp, `${quote.symbol}.feedUpdateTimestamp`),
-        );
-
-        return [
-          quote.key,
-          {
-            feedId: quote.feedId,
-            symbol: quote.symbol,
-            price: toDecimal(parseRequiredNumber(parsed.price, `${quote.symbol}.price`), exponent),
-            emaPrice: toDecimal(
-              parseRequiredNumber(parsed.emaPrice, `${quote.symbol}.emaPrice`),
-              exponent,
-            ),
-            confidence: toDecimal(
-              parseRequiredNumber(parsed.confidence, `${quote.symbol}.confidence`),
-              exponent,
-            ),
-            publisherCount: parsed.publisherCount ?? undefined,
-            updatedAtMs: Math.trunc(updatedAtUs / 1000),
-          },
-        ];
-      }),
-    );
-
-    return NextResponse.json({
-      ok: true,
-      source: "pyth_live",
-      quotes,
-    });
+    const body = await pendingQuotePromise;
+    quoteCache = {
+      expiresAtMs: Date.now() + QUOTE_CACHE_TTL_MS,
+      body,
+    };
+    return NextResponse.json(body);
   } catch (error) {
     return NextResponse.json(
       {
         ok: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Unable to fetch live quotes from Pyth.",
+        error: error instanceof Error ? error.message : "Unable to load market data.",
       },
       { status: 502 },
     );
+  } finally {
+    pendingQuotePromise = null;
   }
 }

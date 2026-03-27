@@ -6,7 +6,6 @@ import {
   buildBootstrapChecklist,
   computeReferenceTargetAda,
   referenceAssetOptions,
-  type CustodyMode,
   type VaultBootstrapDraft,
 } from "@/lib/vault-lab";
 import { runtimeAvailability } from "@/lib/runtime";
@@ -17,32 +16,6 @@ interface VaultBootstrapLabProps {
   currentRiskPrice: number;
   currentReferencePrice?: number;
 }
-
-const custodyOptions: Array<{
-  id: CustodyMode;
-  label: string;
-  description: string;
-  readiness: string;
-}> = [
-  {
-    id: "native",
-    label: "Rootstock Native",
-    description: "Governance and operator rails managed directly on Rootstock.",
-    readiness: "Requires EVM wallet / signer wiring",
-  },
-  {
-    id: "squads",
-    label: "Squads compatible",
-    description: "Cross-chain treasury policy can mirror existing Squads governance.",
-    readiness: "Planned for SVM adapter",
-  },
-  {
-    id: "safe",
-    label: "Safe compatible",
-    description: "Execution policy can map to Safe-controlled governance on EVM.",
-    readiness: "Planned for EVM adapter",
-  },
-];
 
 function Field({
   label,
@@ -81,10 +54,9 @@ export function VaultBootstrapLab({
   return (
     <div className="glass-panel overflow-hidden">
       <div className="border-b border-line px-5 py-4">
-        <h3 className="text-sm font-semibold text-text">Vault Bootstrap Lab</h3>
+        <h3 className="text-sm font-semibold text-text">Policy Builder</h3>
         <p className="mt-1 text-xs text-text-muted">
-          Prepare a Rootstock vault draft, choose custody rails, and generate the
-          bootstrap envelope before wiring the real transaction builder.
+          Configure treasury bounds, wallets, routes, and optional reference targets for the active Rootstock vault.
         </p>
       </div>
       <div className="grid gap-6 p-5 xl:grid-cols-[1.35fr_0.95fr]">
@@ -156,50 +128,6 @@ export function VaultBootstrapLab({
                 className={inputClassName}
               />
             </Field>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="eyebrow">Custody mode</span>
-              <span className="chip-yellow">Mainnet unavailable</span>
-            </div>
-            <div className="grid gap-3 md:grid-cols-3">
-              {custodyOptions.map((option) => {
-                const active = draft.custodyMode === option.id;
-                return (
-                  <button
-                    key={option.id}
-                    type="button"
-                    onClick={() =>
-                      setDraft((current) => ({
-                        ...current,
-                        custodyMode: option.id,
-                      }))
-                    }
-                    className={`rounded-2xl border p-4 text-left transition ${
-                      active
-                        ? "border-accent bg-accent/8"
-                        : "border-line bg-bg-soft hover:border-accent/25"
-                    }`}
-                  >
-                    <div className="mb-3 flex items-center justify-between">
-                      <span className="text-sm font-semibold text-text">
-                        {option.label}
-                      </span>
-                      <span className={active ? "chip-accent" : "chip"}>
-                        {active ? "Selected" : "Available"}
-                      </span>
-                    </div>
-                    <p className="text-sm leading-relaxed text-text-secondary">
-                      {option.description}
-                    </p>
-                    <p className="mt-3 text-xs text-text-muted">
-                      {option.readiness}
-                    </p>
-                  </button>
-                );
-              })}
-            </div>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">

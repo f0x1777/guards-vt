@@ -29,11 +29,12 @@ export function WalletOnboardingModal({
           <div>
             <p className="eyebrow">Wallet Onboarding</p>
             <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white">
-              Connect a Rootstock operator wallet
+              Rootstock testnet access
             </h3>
             <p className="mt-2 max-w-lg text-sm leading-relaxed text-white/55">
-              Choose the wallet path you want to demo. Beexo is the primary UX target,
-              but you can also connect an existing EVM wallet or stay in demo mode.
+              Guards is currently running on Rootstock testnet. Choose whether you want
+              to preview the product with mock data or connect a Beexo-compatible wallet
+              to operate from the testnet surface.
             </p>
           </div>
           <button
@@ -46,7 +47,26 @@ export function WalletOnboardingModal({
           </button>
         </div>
 
+        <div className="mb-4 rounded-2xl border border-[#f0bf5f]/20 bg-[#f0bf5f]/8 px-4 py-3 text-xs leading-relaxed text-[#f0bf5f]">
+          Mainnet is not enabled yet. Any live wallet path here should be treated as a testnet operator flow.
+        </div>
+
         <div className="grid gap-3">
+          <button
+            type="button"
+            onClick={() => onSelect("mock")}
+            disabled={connecting}
+            className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 text-left transition hover:border-white/20 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <div>
+              <p className="text-sm font-semibold text-white">Preview demo</p>
+              <p className="mt-1 text-xs leading-relaxed text-white/55">
+                Instant local session for walkthroughs, seeded treasury balances, and interface review.
+              </p>
+            </div>
+            <Wallet className="h-4 w-4 text-white/60" />
+          </button>
+
           <button
             type="button"
             onClick={() => onSelect("beexo")}
@@ -54,9 +74,9 @@ export function WalletOnboardingModal({
             className="flex items-center justify-between rounded-2xl border border-[#7c6ff7]/30 bg-[#7c6ff7]/8 px-5 py-4 text-left transition hover:border-[#7c6ff7]/55 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <div>
-              <p className="text-sm font-semibold text-white">Beexo Connect</p>
+              <p className="text-sm font-semibold text-white">Connect Beexo wallet to operate</p>
               <p className="mt-1 text-xs leading-relaxed text-white/55">
-                Preferred Rootstock onboarding flow using `xo-connect` and EIP-1193.
+                Preferred Rootstock testnet onboarding flow using `xo-connect` and EIP-1193.
               </p>
             </div>
             <ChevronRight className="h-4 w-4 text-white/60" />
@@ -75,21 +95,6 @@ export function WalletOnboardingModal({
               </p>
             </div>
             <span className="chip">{evmDetected ? "Detected" : "Not detected"}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onSelect("mock")}
-            disabled={connecting}
-            className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 text-left transition hover:border-white/20 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <div>
-              <p className="text-sm font-semibold text-white">Demo wallet</p>
-              <p className="mt-1 text-xs leading-relaxed text-white/55">
-                Instant local session for operator demos, staging flows, and product walkthroughs.
-              </p>
-            </div>
-            <Wallet className="h-4 w-4 text-white/60" />
           </button>
         </div>
       </div>

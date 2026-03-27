@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
-import { Building2, Landmark, Route, ShieldCheck, Wallet } from "lucide-react";
+import { Building2, Landmark, Route, Wallet } from "lucide-react";
 import { runtimeAvailability } from "@/lib/runtime";
 import { shortWalletAddress, type WalletSession } from "@/lib/wallet-session";
 import type { ChainId } from "@/lib/types";
-import type { CustodyMode, VaultBootstrapDraft } from "@/lib/vault-lab";
+import type { VaultBootstrapDraft } from "@/lib/vault-lab";
 import type { CompanyVaultProfile } from "@/lib/company-profiles";
 
 interface VaultProfilePanelProps {
@@ -12,12 +12,6 @@ interface VaultProfilePanelProps {
   walletSession: WalletSession | null;
   activeProfile: CompanyVaultProfile;
 }
-
-const custodyLabels: Record<CustodyMode, string> = {
-  native: "Rootstock native",
-  squads: "Squads compatible",
-  safe: "Safe compatible",
-};
 
 function chainLabel(_chain: ChainId): string {
   return runtimeAvailability.rootstockNetworkLabel;
@@ -54,7 +48,7 @@ export function VaultProfilePanel({
       <div className="border-b border-line px-5 py-4">
         <h3 className="text-sm font-semibold text-text">Vault Profile</h3>
         <p className="mt-1 text-xs text-text-muted">
-          Company, vault, custody, and execution envelope for the active treasury.
+          Company, vault scope, execution route, and active operator context.
         </p>
       </div>
       <div className="space-y-3 p-5">
@@ -74,13 +68,13 @@ export function VaultProfilePanel({
           value={`${activeProfile.companyName} · ${activeProfile.vaultName}`}
         />
         <ProfileRow
-          icon={<ShieldCheck className="h-4 w-4" />}
-          label="Custody"
-          value={`${custodyLabels[draft.custodyMode]} · route ${draft.approvedRouteId}`}
+          icon={<Route className="h-4 w-4" />}
+          label="Execution route"
+          value={draft.approvedRouteId}
         />
         <ProfileRow
           icon={<Wallet className="h-4 w-4" />}
-          label="Execution wallet"
+          label="Connected operator"
           value={
             walletSession
               ? `${walletSession.label} · ${shortWalletAddress(walletSession.address)}`

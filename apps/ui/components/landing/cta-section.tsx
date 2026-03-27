@@ -35,14 +35,51 @@ export function CTASection() {
         </FadeUp>
 
         <FadeUp delay={0.3}>
-          <div className="flex items-center justify-center gap-3 flex-wrap">
+          <div className="mx-auto mb-5 flex max-w-3xl items-center justify-center">
+            <div className="rounded-full border border-[#f0bf5f]/25 bg-[#f0bf5f]/10 px-4 py-2 text-xs font-medium text-[#f0bf5f]">
+              Rootstock testnet only. Choose whether to preview the demo or connect a Beexo wallet to operate.
+            </div>
+          </div>
+
+          <div className="mx-auto grid max-w-4xl gap-4 text-left md:grid-cols-2">
             <a
-              href="/dashboard"
-              className="inline-flex items-center gap-2 rounded-full bg-white text-[#070612] px-8 py-4 text-base font-semibold hover:bg-white/90 transition-all cursor-pointer"
+              href="/dashboard?entry=mock&section=overview"
+              className="rounded-[28px] border border-white/10 bg-white/[0.04] p-6 transition hover:border-white/20 hover:bg-white/[0.06]"
             >
-              Open Demo
-              <ArrowRight className="w-4 h-4" />
+              <p className="eyebrow">Open Demo</p>
+              <h3 className="mt-3 text-2xl font-semibold text-white">
+                Preview demo
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-white/55">
+                See the interface instantly with seeded treasury data, live market quotes,
+                and a product-safe walkthrough of the full operating surface.
+              </p>
+              <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-white">
+                Open dashboard
+                <ArrowRight className="h-4 w-4" />
+              </div>
             </a>
+
+            <a
+              href="/dashboard?entry=connect&section=policy"
+              className="rounded-[28px] border border-[#7c6ff7]/30 bg-[#7c6ff7]/10 p-6 transition hover:border-[#7c6ff7]/55 hover:bg-[#7c6ff7]/14"
+            >
+              <p className="eyebrow">Open Demo</p>
+              <h3 className="mt-3 text-2xl font-semibold text-white">
+                Connect Beexo wallet
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-white/55">
+                Use a Rootstock testnet operator wallet, jump into the policy flow,
+                and start shaping the treasury configuration from the real operating surface.
+              </p>
+              <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-white">
+                Operate on testnet
+                <ArrowRight className="h-4 w-4" />
+              </div>
+            </a>
+          </div>
+
+          <div className="mt-4 flex items-center justify-center gap-3 flex-wrap">
             <WalletStatusChip />
           </div>
         </FadeUp>

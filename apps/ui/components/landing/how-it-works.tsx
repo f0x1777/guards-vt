@@ -62,8 +62,8 @@ export function HowItWorks() {
             From Treasury Setup to Rootstock Execution.
           </h2>
           <p className="mt-6 text-white/45 text-base md:text-lg leading-relaxed max-w-2xl">
-            Guards is being reframed as a treasury workflow for Rootstock: connect a wallet, define bounded rules,
-            and operate company vaults with explicit governance controls.
+            Guards connects a treasury wallet, enforces bounded rules, and turns Rootstock treasury operations into
+            something a company or DAO can actually run and audit.
           </p>
         </FadeUp>
 
