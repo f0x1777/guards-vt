@@ -52,9 +52,29 @@ if [[ "${missing}" -ne 0 ]]; then
 fi
 
 deployer_address="$(cast wallet address --private-key "${ROOTSTOCK_DEPLOYER_PRIVATE_KEY}")"
+bootstrap_signer_address="${deployer_address}"
+
+if [[ -n "${ROOTSTOCK_GUARDED_VAULT_ADDRESS:-}" ]]; then
+  governance_signer_private_key="${ROOTSTOCK_GOVERNANCE_PRIVATE_KEY:-}"
+
+  if [[ -n "${governance_signer_private_key}" ]]; then
+    governance_signer_address="$(cast wallet address --private-key "${governance_signer_private_key}")"
+    if [[ "${governance_signer_address,,}" != "${ROOTSTOCK_GOVERNANCE_ADDRESS,,}" ]]; then
+      echo "ROOTSTOCK_GOVERNANCE_PRIVATE_KEY does not match ROOTSTOCK_GOVERNANCE_ADDRESS" >&2
+      exit 1
+    fi
+    bootstrap_signer_address="${governance_signer_address}"
+  elif [[ "${deployer_address,,}" != "${ROOTSTOCK_GOVERNANCE_ADDRESS,,}" ]]; then
+    echo "Bootstrap requires governance signing. Set ROOTSTOCK_GOVERNANCE_PRIVATE_KEY or use a deployer key that matches ROOTSTOCK_GOVERNANCE_ADDRESS." >&2
+    exit 1
+  fi
+fi
 
 echo "Rootstock testnet deployment surface looks ready."
 echo "RPC: ${ROOTSTOCK_RPC_URL}"
 echo "Deployer: ${deployer_address}"
 echo "Governance: ${ROOTSTOCK_GOVERNANCE_ADDRESS}"
 echo "Operator: ${ROOTSTOCK_OPERATOR_ADDRESS}"
+if [[ -n "${ROOTSTOCK_GUARDED_VAULT_ADDRESS:-}" ]]; then
+  echo "Bootstrap signer: ${bootstrap_signer_address}"
+fi

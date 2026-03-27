@@ -35,7 +35,7 @@ The repository vendors only the minimal `forge-std` source and license files nee
 1. Fill the Rootstock deploy env vars in the repo `.env`
 2. Run `pnpm rootstock:contract:doctor`
 3. Run `pnpm rootstock:contract:deploy:testnet`
-4. Set the deployed vault address and bootstrap allowlists / limits in `.env`
+4. Set the deployed vault address, governance signer, and bootstrap allowlists / limits in `.env`
 5. Run `pnpm rootstock:contract:configure:testnet`
 6. Route a bounded Money on Chain or Sovryn action through an operator flow
 
@@ -44,3 +44,4 @@ The repository vendors only the minimal `forge-std` source and license files nee
 - `forge test` passes locally against live bounded transfer/withdrawal execution
 - the vault supports `RBTC` via `address(0)` and ERC20 transfers with destination + asset allowlists
 - the bootstrap script configures initial allowed assets, destinations, and transfer limits from env arrays
+- bootstrap configuration signs with governance, not an arbitrary deployer key

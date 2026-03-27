@@ -14,9 +14,11 @@ fi
 
 "${script_dir}/doctor-rootstock-testnet.sh"
 
+signer_private_key="${ROOTSTOCK_GOVERNANCE_PRIVATE_KEY:-${ROOTSTOCK_DEPLOYER_PRIVATE_KEY}}"
+
 cd "${contracts_root}"
 
 forge script script/BootstrapGuardedTreasuryVault.s.sol:BootstrapGuardedTreasuryVault \
   --rpc-url "${ROOTSTOCK_RPC_URL}" \
-  --private-key "${ROOTSTOCK_DEPLOYER_PRIVATE_KEY}" \
+  --private-key "${signer_private_key}" \
   --broadcast

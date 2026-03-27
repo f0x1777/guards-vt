@@ -25,6 +25,7 @@ This is the canonical tracker for Guards on Rootstock.
 - [x] Implement bounded `RBTC` / ERC20 transfer and withdrawal execution in `GuardedTreasuryVault`
 - [x] Add a reproducible Rootstock testnet deploy surface for the first vault contract
 - [x] Add a reproducible post-deploy bootstrap/configuration path for the first vault contract
+- [x] Require a governance signer for post-deploy vault bootstrap configuration
 - [ ] Deploy at least one contract on Rootstock testnet
 - [ ] Document deployed addresses and networks
 
