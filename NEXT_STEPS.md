@@ -38,6 +38,7 @@ This is the canonical tracker for the Rootstock / Beexo derivation of Guards.
 - [ ] Define whether one wallet can manage multiple company vaults in the MVP
 
 ## DeFi Integrations
+- [x] Scaffold protocol adapter surfaces for Money on Chain and Sovryn
 - [ ] Evaluate Money on Chain for stable / BTC-denominated treasury flows
 - [ ] Evaluate Tropykus for treasury lending / collateral management use cases
 - [ ] Evaluate Sovryn for swaps or treasury movement workflows

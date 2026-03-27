@@ -93,6 +93,18 @@ Potential MVP capabilities:
 - treasury health views and account controls
 - wallet-first UX using Beexo Connect
 
+## Bounded Automation Direction
+
+Automatic swaps are possible on Rootstock, but the product should frame them as bounded treasury actions, not arbitrary trading.
+
+The intended model is:
+- governance allowlists the protocol route
+- governance caps notional and slippage
+- an operator or keeper prepares a bounded action
+- the vault contract enforces limits before execution
+
+The first real protocol target should be either `Money on Chain` or `Sovryn`, depending on which yields the most credible demo path fastest.
+
 ## Quick Start
 
 ```bash
