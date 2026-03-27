@@ -10,6 +10,7 @@ Set these values in the repo-level `.env`:
 
 - `ROOTSTOCK_RPC_URL`
 - `ROOTSTOCK_DEPLOYER_PRIVATE_KEY`
+- `ROOTSTOCK_GOVERNANCE_PRIVATE_KEY` (required unless `ROOTSTOCK_DEPLOYER_PRIVATE_KEY` derives `ROOTSTOCK_GOVERNANCE_ADDRESS`)
 - `ROOTSTOCK_GOVERNANCE_ADDRESS`
 - `ROOTSTOCK_OPERATOR_ADDRESS`
 
@@ -53,6 +54,11 @@ After deployment, set these env vars:
 - `ROOTSTOCK_ALLOWED_DESTINATIONS`
 - `ROOTSTOCK_LIMIT_ASSETS`
 - `ROOTSTOCK_LIMIT_VALUES`
+
+Bootstrap configuration uses the governance signer.
+
+- If `ROOTSTOCK_GOVERNANCE_PRIVATE_KEY` is set, it must match `ROOTSTOCK_GOVERNANCE_ADDRESS`.
+- If it is not set, the script requires `ROOTSTOCK_DEPLOYER_PRIVATE_KEY` to derive the same address as `ROOTSTOCK_GOVERNANCE_ADDRESS`.
 
 Then run:
 
