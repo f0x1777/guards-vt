@@ -19,16 +19,8 @@ const custodyLabels: Record<CustodyMode, string> = {
   safe: "Safe compatible",
 };
 
-function chainLabel(chain: ChainId): string {
-  if (chain === "evm") {
-    return runtimeAvailability.rootstockNetworkLabel;
-  }
-
-  if (chain === "svm") {
-    return "Solana / SVM";
-  }
-
-  return "Cardano";
+function chainLabel(_chain: ChainId): string {
+  return runtimeAvailability.rootstockNetworkLabel;
 }
 
 function ProfileRow({

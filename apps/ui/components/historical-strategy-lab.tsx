@@ -87,6 +87,7 @@ export function HistoricalStrategyLab({ draft, dataset }: HistoricalStrategyLabP
   const [strategy, setStrategy] = useState<MockStrategyId>("guards_ladder");
   const [activeIndex, setActiveIndex] = useState(0);
   const [autoplay, setAutoplay] = useState(false);
+  const riskSymbol = draft.primaryAssetId.toUpperCase();
 
   const result = useMemo(
     () =>
@@ -211,7 +212,7 @@ export function HistoricalStrategyLab({ draft, dataset }: HistoricalStrategyLabP
           <div className="rounded-2xl border border-line bg-bg-soft p-4 space-y-3">
             <div>
               <p className="eyebrow">Active point</p>
-              <p className="mt-2 text-lg font-semibold text-text">ADA ${activePoint?.adaPrice.toFixed(4)}</p>
+              <p className="mt-2 text-lg font-semibold text-text">{riskSymbol} ${activePoint?.adaPrice.toFixed(4)}</p>
               <p className="mt-1 text-sm text-text-secondary">EMA ${activePoint?.adaEmaPrice.toFixed(4)} · confidence ±${activePoint?.adaConfidence.toFixed(4)}</p>
             </div>
             <div>

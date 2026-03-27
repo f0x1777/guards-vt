@@ -30,7 +30,6 @@ export function RuntimeControlPanel({
   setWalletSession,
 }: RuntimeControlPanelProps) {
   const [evmDetected, setEvmDetected] = useState(false);
-  const [svmDetected, setSvmDetected] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -39,7 +38,6 @@ export function RuntimeControlPanel({
 
     const availability = detectWalletAvailability();
     setEvmDetected(availability.evm);
-    setSvmDetected(availability.svm);
   }, []);
 
   return (
@@ -50,7 +48,7 @@ export function RuntimeControlPanel({
             <h3 className="text-sm font-semibold text-text">Runtime Control</h3>
             <p className="mt-1 text-xs text-text-muted">
               Toggle between mock replay and the current Rootstock-oriented dashboard snapshot.
-              Use demo wallets now; the primary target is Beexo Connect on Rootstock testnet.
+              Use Beexo or another Rootstock-compatible wallet when available, or fall back to the demo wallet for staging.
             </p>
           </div>
           <span className="chip-accent">Demo-first</span>
@@ -128,26 +126,18 @@ export function RuntimeControlPanel({
           <div className="grid gap-3 md:grid-cols-3">
             <button
               type="button"
-              onClick={() => setWalletSession(createMockWalletSession("evm"))}
+              onClick={() => setWalletSession(createMockWalletSession())}
               className="rounded-2xl border border-line bg-bg-soft p-4 text-left transition hover:border-accent/25"
             >
               <p className="text-sm font-semibold text-text">Mock Rootstock</p>
               <p className="mt-2 text-xs text-text-muted">Instant demo session for Rootstock / Beexo-style treasury flows.</p>
             </button>
-            <button
-              type="button"
-              onClick={() => setWalletSession(createMockWalletSession("svm"))}
-              className="rounded-2xl border border-line bg-bg-soft p-4 text-left transition hover:border-accent/25"
-            >
-              <p className="text-sm font-semibold text-text">Mock SVM</p>
-              <p className="mt-2 text-xs text-text-muted">Lets the team demo the multichain control plane while SVM wallet adapters are wired.</p>
-            </button>
-            <div className="rounded-2xl border border-line bg-bg-soft p-4 text-left">
-              <p className="text-sm font-semibold text-text">Beexo / wallet connectors</p>
+            <div className="rounded-2xl border border-line bg-bg-soft p-4 text-left md:col-span-2">
+              <p className="text-sm font-semibold text-text">Beexo / EVM connector</p>
               <div className="mt-2 space-y-1 text-xs text-text-muted">
                 <p>EVM provider detected: {evmDetected ? "yes" : "no"}</p>
-                <p>SVM provider detected: {svmDetected ? "yes" : "no"}</p>
-                <p>Top-right connect uses real providers when available, then falls back to mock.</p>
+                <p>Top-right connect uses Beexo or any EIP-1193 wallet on Rootstock testnet.</p>
+                <p>If no provider is available, the dashboard falls back to the demo wallet.</p>
               </div>
             </div>
           </div>

@@ -8,6 +8,7 @@ interface SwapPanelProps {
   currentPrice: number;
   oracleFreshness: string;
   haircutBps: number;
+  routeLabel: string;
 }
 
 export function SwapPanel({
@@ -16,6 +17,7 @@ export function SwapPanel({
   currentPrice,
   oracleFreshness,
   haircutBps,
+  routeLabel,
 }: SwapPanelProps) {
   const [direction, setDirection] = useState<"derisk" | "reentry">("derisk");
   const [amount, setAmount] = useState("");
@@ -140,7 +142,7 @@ export function SwapPanel({
           </div>
           <div className="flex justify-between text-xs">
             <span className="text-text-muted">Route</span>
-            <span className="font-mono text-accent">DexHunter</span>
+            <span className="font-mono text-accent">{routeLabel}</span>
           </div>
         </div>
 
