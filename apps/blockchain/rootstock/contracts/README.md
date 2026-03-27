@@ -16,6 +16,11 @@ MVP responsibilities:
 - bounded transfer execution
 - bounded withdrawal execution
 
+Current implementation note:
+- guardrails and role checks are scaffolded
+- deployment script and tests are scaffolded
+- transfer and withdrawal execution intentionally revert until real custody semantics are implemented
+
 ## Tooling choice
 
 The recommended stack for this repo is `Foundry`, because it is fast to scaffold, test, and deploy for an EVM-compatible target like Rootstock.
@@ -24,5 +29,5 @@ The recommended stack for this repo is `Foundry`, because it is fast to scaffold
 
 1. Install Foundry in the actual dev environment
 2. Add RPC and deployer env vars for Rootstock testnet
-3. Write deployment script
+3. Wire real asset movement and vault custody semantics
 4. Deploy the first contract to Rootstock testnet
