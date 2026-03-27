@@ -1,26 +1,31 @@
-import type { PreparedProtocolAction, ProtocolAdapter, TreasuryActionIntent } from "./types";
+import {
+  validateIntentForAdapter,
+  type PreparedProtocolAction,
+  type ProtocolAdapter,
+  type TreasuryActionIntent,
+} from "./types.js";
 
-function formatSwapSummary(intent: TreasuryActionIntent): string {
+const MONEY_ON_CHAIN_ID = "money-on-chain" as const;
+const MONEY_ON_CHAIN_SUPPORTS = ["swap", "rebalance", "withdraw"] as const;
+
+function formatActionSummary(intent: TreasuryActionIntent): string {
   const pair = intent.route.buyToken ? `${intent.route.sellToken}/${intent.route.buyToken}` : intent.route.sellToken;
   return `Money on Chain guarded ${intent.kind} on ${pair} with max ${intent.route.maxNotionalUsd} USD notional`;
 }
 
 export const moneyOnChainAdapter: ProtocolAdapter = {
-  id: "money-on-chain",
+  id: MONEY_ON_CHAIN_ID,
   label: "Money on Chain",
-  supports: ["swap", "rebalance", "withdraw"],
+  supports: [...MONEY_ON_CHAIN_SUPPORTS],
   prepare(intent: TreasuryActionIntent): PreparedProtocolAction {
+    validateIntentForAdapter(MONEY_ON_CHAIN_ID, MONEY_ON_CHAIN_SUPPORTS, intent);
+
     return {
-      protocolId: "money-on-chain",
-      summary: formatSwapSummary(intent),
+      protocolId: MONEY_ON_CHAIN_ID,
+      summary: formatActionSummary(intent),
       approvalSurface: "keeper",
-      calls: [
-        {
-          target: "0x0000000000000000000000000000000000000000",
-          data: "0x",
-          value: intent.kind === "withdraw" ? intent.amount : undefined,
-        },
-      ],
+      scaffoldOnly: true,
+      calls: [],
     };
   },
 };

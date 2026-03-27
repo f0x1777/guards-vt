@@ -40,6 +40,7 @@ This is the canonical tracker for the Rootstock / Beexo derivation of Guards.
 
 ## DeFi Integrations
 - [x] Scaffold protocol adapter surfaces for Money on Chain and Sovryn
+- [x] Add fail-closed tests for Rootstock protocol adapter scaffolds
 - [ ] Evaluate Money on Chain for stable / BTC-denominated treasury flows
 - [ ] Evaluate Tropykus for treasury lending / collateral management use cases
 - [ ] Evaluate Sovryn for swaps or treasury movement workflows

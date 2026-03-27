@@ -1,25 +1,31 @@
-import type { PreparedProtocolAction, ProtocolAdapter, TreasuryActionIntent } from "./types";
+import {
+  validateIntentForAdapter,
+  type PreparedProtocolAction,
+  type ProtocolAdapter,
+  type TreasuryActionIntent,
+} from "./types.js";
 
-function formatSwapSummary(intent: TreasuryActionIntent): string {
+const SOVRYN_ID = "sovryn" as const;
+const SOVRYN_SUPPORTS = ["swap", "rebalance", "bridge"] as const;
+
+function formatActionSummary(intent: TreasuryActionIntent): string {
   const pair = intent.route.buyToken ? `${intent.route.sellToken}/${intent.route.buyToken}` : intent.route.sellToken;
   return `Sovryn guarded ${intent.kind} on ${pair} with capped slippage ${intent.route.slippageBps} bps`;
 }
 
 export const sovrynAdapter: ProtocolAdapter = {
-  id: "sovryn",
+  id: SOVRYN_ID,
   label: "Sovryn",
-  supports: ["swap", "rebalance", "bridge"],
+  supports: [...SOVRYN_SUPPORTS],
   prepare(intent: TreasuryActionIntent): PreparedProtocolAction {
+    validateIntentForAdapter(SOVRYN_ID, SOVRYN_SUPPORTS, intent);
+
     return {
-      protocolId: "sovryn",
-      summary: formatSwapSummary(intent),
+      protocolId: SOVRYN_ID,
+      summary: formatActionSummary(intent),
       approvalSurface: "keeper",
-      calls: [
-        {
-          target: "0x0000000000000000000000000000000000000000",
-          data: "0x",
-        },
-      ],
+      scaffoldOnly: true,
+      calls: [],
     };
   },
 };
