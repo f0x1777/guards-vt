@@ -40,6 +40,17 @@ const navItems = [
     ),
   },
   {
+    id: "admin",
+    label: "Admin",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 2.5l5 2v4.5c0 3-2.1 5.6-5 6.5-2.9-.9-5-3.5-5-6.5V4.5l5-2z" />
+        <path d="M7 8.5h4" />
+        <path d="M9 6.5v4" />
+      </svg>
+    ),
+  },
+  {
     id: "runtime",
     label: "Runtime",
     icon: (

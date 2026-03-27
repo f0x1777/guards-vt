@@ -24,6 +24,7 @@ import {
   type DashboardMode,
 } from "@/components/runtime-control-panel";
 import { TreasuryActionsPanel } from "@/components/treasury-actions-panel";
+import { VaultAdminPanel } from "@/components/vault-admin-panel";
 import { WalletOnboardingModal } from "@/components/wallet-onboarding-modal";
 import type { RiskLadderStep } from "@/lib/types";
 import { demoState } from "@/lib/demo-data";
@@ -217,8 +218,17 @@ export default function Dashboard() {
     }
   }
 
-  function handleTreasuryAction(kind: "send" | "withdraw") {
-    const label = kind === "send" ? "Send" : "Withdraw";
+  function handleTreasuryAction(
+    kind: "send" | "withdraw" | "bridge" | "onramp" | "offramp",
+  ) {
+    const labelMap: Record<typeof kind, string> = {
+      send: "Send",
+      withdraw: "Withdraw",
+      bridge: "Bridge",
+      onramp: "Onramp",
+      offramp: "Offramp",
+    };
+    const label = labelMap[kind];
     if (!walletSession) {
       setTreasuryActionMessage(
         `${label} is staged, but no wallet is connected yet. Use the top-right wallet connect or the Runtime demo wallet first.`,
@@ -227,7 +237,7 @@ export default function Dashboard() {
     }
 
     setTreasuryActionMessage(
-      `${label} flow staged for ${walletSession.label} on ${activeProfile.companyName} · ${bootstrapDraft.vaultName}. On-chain tx wiring is the next step.`,
+      `${label} flow staged for ${walletSession.label} on ${activeProfile.companyName} · ${bootstrapDraft.vaultName}. Governance model ${activeProfile.thresholdLabel}, route ${bootstrapDraft.approvedRouteId}. On-chain tx wiring is the next step.`,
     );
   }
 
@@ -427,21 +437,33 @@ export default function Dashboard() {
           )}
 
           {/* Execution */}
-          {activeSection === "execution" && (
-            <motion.section key="execution" {...sectionTransition} className="mb-8 grid gap-6 xl:grid-cols-[1.35fr_0.95fr]">
-              <ExecutionTimeline events={data.events} referenceNowMs={data.nowMs} />
-              <div className="space-y-6">
+          {activeSection === "admin" && (
+            <motion.section key="admin" {...sectionTransition} className="space-y-6 mb-8">
+              <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
                 <VaultProfilePanel
                   draft={bootstrapDraft}
                   chain={data.vault.chain}
                   walletSession={walletSession}
                   activeProfile={activeProfile}
                 />
+                <VaultAdminPanel profile={activeProfile} />
+              </div>
+              <TreasuryActionsPanel
+                walletSession={walletSession}
+                actionMessage={treasuryActionMessage}
+                onAction={handleTreasuryAction}
+              />
+            </motion.section>
+          )}
+
+          {activeSection === "execution" && (
+            <motion.section key="execution" {...sectionTransition} className="mb-8 grid gap-6 xl:grid-cols-[1.35fr_0.95fr]">
+              <ExecutionTimeline events={data.events} referenceNowMs={data.nowMs} />
+              <div className="space-y-6">
                 <TreasuryActionsPanel
                   walletSession={walletSession}
                   actionMessage={treasuryActionMessage}
-                  onSend={() => handleTreasuryAction("send")}
-                  onWithdraw={() => handleTreasuryAction("withdraw")}
+                  onAction={handleTreasuryAction}
                 />
               </div>
             </motion.section>
