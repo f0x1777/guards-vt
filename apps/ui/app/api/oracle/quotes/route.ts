@@ -4,7 +4,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const REQUEST_TIMEOUT_MS = 5_000;
-const QUOTE_CACHE_TTL_MS = 60_000;
+const QUOTE_CACHE_TTL_MS = 25_000;
 const EMA_SMOOTHING_WINDOW_MS = 30 * 60 * 1000;
 
 interface MarketQuote {
@@ -57,12 +57,13 @@ interface EmaCacheEntry {
 }
 
 let quoteCache: QuoteCacheEntry | null = null;
+let pendingQuotePromise: Promise<QuotesResponseBody> | null = null;
 const emaCache = new Map<string, EmaCacheEntry>();
 
 async function fetchJson<T>(url: string): Promise<T> {
   const response = await fetch(url, {
     method: "GET",
-    cache: "force-cache",
+    cache: "no-store",
     headers: {
       accept: "application/json",
     },
@@ -125,91 +126,102 @@ export async function GET() {
     return NextResponse.json(quoteCache.body);
   }
 
-  const [coingeckoResult, goldResult, eurResult] = await Promise.allSettled([
-    fetchJson<CoinGeckoSimplePriceResponse>(
-      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,solana&vs_currencies=usd",
-    ),
-    fetchJson<GoldApiResponse>("https://api.gold-api.com/price/XAU"),
-    fetchJson<FrankfurterResponse>("https://api.frankfurter.app/latest?from=EUR&to=USD"),
-  ]);
+  if (!pendingQuotePromise) {
+    pendingQuotePromise = (async () => {
+      const [coingeckoResult, goldResult, eurResult] = await Promise.allSettled([
+        fetchJson<CoinGeckoSimplePriceResponse>(
+          "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,solana&vs_currencies=usd",
+        ),
+        fetchJson<GoldApiResponse>("https://api.gold-api.com/price/XAU"),
+        fetchJson<FrankfurterResponse>("https://api.frankfurter.app/latest?from=EUR&to=USD"),
+      ]);
 
-  const sourceErrors: string[] = [];
-  const quotes: QuotesResponseBody["quotes"] = {};
+      const sourceErrors: string[] = [];
+      const quotes: QuotesResponseBody["quotes"] = {};
 
-  if (coingeckoResult.status === "fulfilled") {
-    const coingecko = coingeckoResult.value;
-    const btcUsd = finiteOrNull(coingecko.bitcoin?.usd);
-    const solUsd = finiteOrNull(coingecko.solana?.usd);
-    if (btcUsd !== null) {
-      quotes.rbtc = buildQuote("market-rbtc-usd", "RBTC/USD", btcUsd, nowMs, 0.0012);
-      quotes.btc = buildQuote("market-btc-usd", "BTC/USD", btcUsd, nowMs, 0.0012);
-    } else {
-      sourceErrors.push("coingecko: missing bitcoin.usd (affects rbtc and btc quotes)");
-    }
-    if (solUsd !== null) {
-      quotes.sol = buildQuote("market-sol-usd", "SOL/USD", solUsd, nowMs, 0.0018);
-    } else {
-      sourceErrors.push("coingecko: missing solana.usd");
-    }
-  } else {
-    sourceErrors.push(
-      `coingecko: ${coingeckoResult.reason instanceof Error ? coingeckoResult.reason.message : "fetch failed"}`,
-    );
+      if (coingeckoResult.status === "fulfilled") {
+        const coingecko = coingeckoResult.value;
+        const btcUsd = finiteOrNull(coingecko.bitcoin?.usd);
+        const solUsd = finiteOrNull(coingecko.solana?.usd);
+        if (btcUsd !== null) {
+          quotes.rbtc = buildQuote("market-rbtc-usd", "RBTC/USD", btcUsd, nowMs, 0.0012);
+          quotes.btc = buildQuote("market-btc-usd", "BTC/USD", btcUsd, nowMs, 0.0012);
+        } else {
+          sourceErrors.push("coingecko: missing bitcoin.usd (affects rbtc and btc quotes)");
+        }
+        if (solUsd !== null) {
+          quotes.sol = buildQuote("market-sol-usd", "SOL/USD", solUsd, nowMs, 0.0018);
+        } else {
+          sourceErrors.push("coingecko: missing solana.usd");
+        }
+      } else {
+        sourceErrors.push(
+          `coingecko: ${coingeckoResult.reason instanceof Error ? coingeckoResult.reason.message : "fetch failed"}`,
+        );
+      }
+
+      if (goldResult.status === "fulfilled") {
+        const gold = goldResult.value;
+        const xauUsd = finiteOrNull(gold.price);
+        if (xauUsd !== null) {
+          const goldUpdatedAtMs = (() => {
+            if (!gold.updatedAt) return nowMs;
+            const parsed = Date.parse(gold.updatedAt);
+            return Number.isFinite(parsed) ? parsed : nowMs;
+          })();
+          quotes.xau = buildQuote("market-xau-usd", "XAU/USD", xauUsd, goldUpdatedAtMs, 0.0008);
+        } else {
+          sourceErrors.push("gold-api: missing price");
+        }
+      } else {
+        sourceErrors.push(
+          `gold-api: ${goldResult.reason instanceof Error ? goldResult.reason.message : "fetch failed"}`,
+        );
+      }
+
+      if (eurResult.status === "fulfilled") {
+        const eur = eurResult.value;
+        const eurUsd = finiteOrNull(eur.rates?.USD);
+        if (eurUsd !== null) {
+          quotes.eur = buildQuote("market-eur-usd", "EUR/USD", eurUsd, nowMs, 0.0002);
+        } else {
+          sourceErrors.push("frankfurter: missing rates.USD");
+        }
+      } else {
+        sourceErrors.push(
+          `frankfurter: ${eurResult.reason instanceof Error ? eurResult.reason.message : "fetch failed"}`,
+        );
+      }
+
+      if (Object.keys(quotes).length === 0) {
+        throw new Error(`All market data sources failed: ${sourceErrors.join("; ")}`);
+      }
+
+      return {
+        ok: true,
+        source: "market_live",
+        quotes,
+        ...(sourceErrors.length > 0 && { sourceErrors }),
+      } satisfies QuotesResponseBody;
+    })();
   }
 
-  if (goldResult.status === "fulfilled") {
-    const gold = goldResult.value;
-    const xauUsd = finiteOrNull(gold.price);
-    if (xauUsd !== null) {
-      const goldUpdatedAtMs = (() => {
-        if (!gold.updatedAt) return nowMs;
-        const parsed = Date.parse(gold.updatedAt);
-        return Number.isFinite(parsed) ? parsed : nowMs;
-      })();
-      quotes.xau = buildQuote("market-xau-usd", "XAU/USD", xauUsd, goldUpdatedAtMs, 0.0008);
-    } else {
-      sourceErrors.push("gold-api: missing price");
-    }
-  } else {
-    sourceErrors.push(
-      `gold-api: ${goldResult.reason instanceof Error ? goldResult.reason.message : "fetch failed"}`,
-    );
-  }
-
-  if (eurResult.status === "fulfilled") {
-    const eur = eurResult.value;
-    const eurUsd = finiteOrNull(eur.rates?.USD);
-    if (eurUsd !== null) {
-      quotes.eur = buildQuote("market-eur-usd", "EUR/USD", eurUsd, nowMs, 0.0002);
-    } else {
-      sourceErrors.push("frankfurter: missing rates.USD");
-    }
-  } else {
-    sourceErrors.push(
-      `frankfurter: ${eurResult.reason instanceof Error ? eurResult.reason.message : "fetch failed"}`,
-    );
-  }
-
-  if (Object.keys(quotes).length === 0) {
+  try {
+    const body = await pendingQuotePromise;
+    quoteCache = {
+      expiresAtMs: Date.now() + QUOTE_CACHE_TTL_MS,
+      body,
+    };
+    return NextResponse.json(body);
+  } catch (error) {
     return NextResponse.json(
       {
         ok: false,
-        error: `All market data sources failed: ${sourceErrors.join("; ")}`,
+        error: error instanceof Error ? error.message : "Unable to load market data.",
       },
       { status: 502 },
     );
+  } finally {
+    pendingQuotePromise = null;
   }
-
-  const body: QuotesResponseBody = {
-    ok: true,
-    source: "market_live",
-    quotes,
-    ...(sourceErrors.length > 0 && { sourceErrors }),
-  };
-  quoteCache = {
-    expiresAtMs: nowMs + QUOTE_CACHE_TTL_MS,
-    body,
-  };
-
-  return NextResponse.json(body);
 }

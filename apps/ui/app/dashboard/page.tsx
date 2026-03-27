@@ -57,6 +57,16 @@ import {
   companyVaultProfiles,
 } from "@/lib/company-profiles";
 
+const DASHBOARD_SECTIONS = new Set([
+  "overview",
+  "accounts",
+  "policy",
+  "risk",
+  "admin",
+  "audit",
+  "runtime",
+]);
+
 const sectionTransition = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
@@ -105,7 +115,7 @@ export default function Dashboard() {
     const requestedSection = params.get("section");
     const requestedEntry = params.get("entry");
 
-    if (requestedSection) {
+    if (requestedSection && DASHBOARD_SECTIONS.has(requestedSection)) {
       setActiveSection(requestedSection);
     }
 
@@ -212,7 +222,7 @@ export default function Dashboard() {
     () => applyLiveQuotesToDemoState(demoState, liveQuotes ?? {}),
     [liveQuotes],
   );
-  const liveQuotesEnabled = Boolean(liveQuotes?.rbtc);
+  const liveQuotesEnabled = data.oracle.feedId !== demoState.oracle.feedId;
   const policyView = buildPolicyViewFromDraft(bootstrapDraft);
   const activeProfile =
     companyVaultProfiles.find((candidate) => candidate.id === activeProfileId) ??
@@ -382,12 +392,22 @@ export default function Dashboard() {
                         {data.oracle.feedId}
                       </p>
                     </div>
-                    <span className="chip-green">
+                    <span className={liveQuotesEnabled ? "chip-green" : "chip-amber"}>
                       <span className="relative flex h-1.5 w-1.5">
-                        <span className="animate-ping motion-reduce:animate-none absolute inline-flex h-full w-full rounded-full bg-green opacity-50" />
-                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green" />
+                        <span
+                          className={
+                            "animate-ping motion-reduce:animate-none absolute inline-flex h-full w-full rounded-full opacity-50 " +
+                            (liveQuotesEnabled ? "bg-green" : "bg-amber")
+                          }
+                        />
+                        <span
+                          className={
+                            "relative inline-flex rounded-full h-1.5 w-1.5 " +
+                            (liveQuotesEnabled ? "bg-green" : "bg-amber")
+                          }
+                        />
                       </span>
-                      Live
+                      {liveQuotesEnabled ? "Live" : "Demo"}
                     </span>
                   </div>
                   <div className="relative grid grid-cols-1 md:grid-cols-3 gap-6">

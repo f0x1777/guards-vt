@@ -165,6 +165,15 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
+function clampAroundBase(
+  baseValue: number,
+  multiplier: number,
+  minMultiplier: number,
+  maxMultiplier: number,
+): number {
+  return baseValue * clamp(multiplier, minMultiplier, maxMultiplier);
+}
+
 function toLabel(timestampMs: number): string {
   const date = new Date(timestampMs);
   const dayFormatter = new Intl.DateTimeFormat("en-US", {
@@ -267,7 +276,12 @@ function buildPriceSeries(
     let selloff = Math.exp(-Math.pow((progress - 0.48) / 0.085, 2)) * -0.18;
     let recovery = Math.exp(-Math.pow((progress - 0.82) / 0.09, 2)) * 0.1;
     let drift = progress > 0.6 ? (progress - 0.6) * 0.02 : 0;
-    let stablePrice = clamp(baseStablePrice * (1 + Math.sin(index / 48) * 0.0018), 0.972, 1.01);
+    let stablePrice = clampAroundBase(
+      baseStablePrice,
+      1 + Math.sin(index / 48) * 0.0018,
+      0.972,
+      1.01,
+    );
     let referencePrice = buildReferencePrice(
       options.referenceSymbol,
       baseReferencePrice,
@@ -281,7 +295,12 @@ function buildPriceSeries(
       recovery = Math.exp(-Math.pow((progress - 0.78) / 0.08, 2)) * 0.07;
       drift = progress > 0.7 ? (progress - 0.7) * 0.012 : 0;
     } else if (options.dataset === "stable_depeg") {
-      stablePrice = clamp(baseStablePrice * (1 - Math.exp(-Math.pow((progress - 0.58) / 0.08, 2)) * 0.022), 0.972, 1.003);
+      stablePrice = clampAroundBase(
+        baseStablePrice,
+        1 - Math.exp(-Math.pow((progress - 0.58) / 0.08, 2)) * 0.022,
+        0.972,
+        1.003,
+      );
       selloff = Math.exp(-Math.pow((progress - 0.5) / 0.12, 2)) * -0.08;
       recovery = Math.exp(-Math.pow((progress - 0.84) / 0.1, 2)) * 0.04;
     } else if (options.dataset === "xau_rotation") {
