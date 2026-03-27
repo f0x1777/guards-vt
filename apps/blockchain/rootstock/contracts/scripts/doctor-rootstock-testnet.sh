@@ -31,6 +31,22 @@ if ! command -v cast >/dev/null 2>&1; then
   missing=1
 fi
 
+if [[ -n "${ROOTSTOCK_GUARDED_VAULT_ADDRESS:-}" ]]; then
+  extra_required_vars=(
+    ROOTSTOCK_ALLOWED_ASSETS
+    ROOTSTOCK_ALLOWED_DESTINATIONS
+    ROOTSTOCK_LIMIT_ASSETS
+    ROOTSTOCK_LIMIT_VALUES
+  )
+
+  for name in "${extra_required_vars[@]}"; do
+    if [[ -z "${!name:-}" ]]; then
+      echo "Missing required bootstrap env var: ${name}" >&2
+      missing=1
+    fi
+  done
+fi
+
 if [[ "${missing}" -ne 0 ]]; then
   exit 1
 fi

@@ -24,6 +24,7 @@ This is the canonical tracker for the Rootstock / Beexo derivation of Guards.
 - [x] Keep the Foundry vendor footprint minimal and ignore generated artifacts
 - [x] Implement bounded `RBTC` / ERC20 transfer and withdrawal execution in `GuardedTreasuryVault`
 - [x] Add a reproducible Rootstock testnet deploy surface for the first vault contract
+- [x] Add a reproducible post-deploy bootstrap/configuration path for the first vault contract
 - [ ] Deploy at least one contract on Rootstock testnet
 - [ ] Document deployed addresses and networks
 
