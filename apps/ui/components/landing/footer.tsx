@@ -14,7 +14,6 @@ export function Footer() {
 
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-white/45">
             <a href="#how-it-works" className="hover:text-white transition-colors">How it works</a>
-            <a href="#multichain" className="hover:text-white transition-colors">Multichain</a>
             <a href="/dashboard" className="hover:text-white transition-colors">Demo dashboard</a>
           </div>
         </div>

@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const links = [
   { href: "#how-it-works", label: "How It Works" },
-  { href: "#multichain", label: "Multichain" },
   { href: "/dashboard", label: "Demo" },
 ];
 

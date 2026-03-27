@@ -1,7 +1,6 @@
 import { Navbar } from "@/components/landing/navbar";
 import { Hero } from "@/components/landing/hero";
 import { HowItWorks } from "@/components/landing/how-it-works";
-import { MultichainSection } from "@/components/landing/multichain-section";
 import { TrackBanner } from "@/components/landing/track-banner";
 import { RiskLadderSection } from "@/components/landing/risk-ladder-section";
 import { CTASection } from "@/components/landing/cta-section";
@@ -15,7 +14,6 @@ export default function LandingPage() {
       <TrackBanner />
       <HowItWorks />
       <RiskLadderSection />
-      <MultichainSection />
       <CTASection />
       <Footer />
     </main>
