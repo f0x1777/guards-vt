@@ -35,8 +35,8 @@ export function Hero() {
 
               <BlurIn delay={0.4} duration={0.6}>
                 <p className="text-white/80 text-lg font-normal leading-relaxed max-w-xl">
-                  Guards is being adapted into a treasury operations layer for Bitcoin DeFi teams on Rootstock,
-                  with wallet UX driven by Beexo Connect and governance-bounded treasury actions.
+                  Guards is a treasury operations layer for Bitcoin DeFi teams on Rootstock, with wallet UX
+                  driven by Beexo Connect and governance-bounded treasury actions.
                 </p>
               </BlurIn>
             </div>

@@ -49,7 +49,7 @@ export function Topbar({
   onDisconnectWallet,
 }: TopbarProps) {
   const appearance = getStageAppearance(stage);
-  const pythAccent = liveQuotesError
+  const quoteAccent = liveQuotesError
     ? "#f0bf5f"
     : liveQuotesEnabled
       ? "#22c55e"
@@ -107,7 +107,7 @@ export function Topbar({
               height="12"
               viewBox="0 0 12 12"
               fill="none"
-              stroke={pythAccent}
+              stroke={quoteAccent}
               strokeWidth="1.5"
             >
               <circle cx="6" cy="6" r="5" />

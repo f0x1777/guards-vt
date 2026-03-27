@@ -1,6 +1,6 @@
 # Rootstock Offchain
 
-This directory is the Rootstock-specific offchain surface for the adapted version of Guards.
+This directory is the Rootstock-specific offchain surface for Guards.
 
 ## Scope
 - `Beexo Connect` / `EIP-1193` wallet flows

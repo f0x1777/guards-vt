@@ -4,7 +4,6 @@ This workspace is the team-facing entrypoint for all chain, contract, and execut
 
 The current implementation still uses `packages/*` as the source of truth for reusable adapters and simulators. This app exists so the team has one obvious place to iterate on:
 
-- Cardano smart contracts / `Aiken`
 - Rootstock contracts / `Solidity`
 - off-chain transaction builders
 - wallet / signer adapters
@@ -31,18 +30,11 @@ Use `packages/*` for shared libraries and stable adapter code that needs to be i
 
 Today:
 - Rootstock contract scaffold: `apps/blockchain/rootstock/contracts`
-- Cardano simulator/spec: `packages/cardano`
-- Cardano Aiken scaffold: `apps/blockchain/cardano/contracts/aiken`
 - backend orchestration: `apps/backend`
-- live Pyth collector + witness wiring: `apps/blockchain/cardano/offchain`
 - multichain scaffolding: `packages/svm`, `packages/evm`
-
-Import the live collector explicitly from `@anaconda/blockchain/cardano/offchain`.
-The generic `@anaconda/blockchain/cardano` entrypoint stays side-effect free and does not load dotenv or the Pyth SDK.
 
 Next:
 - move Rootstock-specific implementation into `apps/blockchain/rootstock/*`
-- move more live off-chain execution work into `apps/blockchain/cardano/offchain`
 - keep reusable types/engines in `packages/core`
 
 ## Team workflow

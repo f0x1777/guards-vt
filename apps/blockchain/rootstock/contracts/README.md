@@ -1,6 +1,6 @@
 # Rootstock Contracts
 
-This is the source of truth for Rootstock smart contracts in the adapted Guards repo.
+This is the source of truth for Rootstock smart contracts in Guards.
 
 ## First contract
 

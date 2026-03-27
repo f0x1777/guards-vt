@@ -1,17 +1,17 @@
 # ROOTSTOCK IMPLEMENTATION TRACKER
 
-This is the canonical tracker for the Rootstock / Beexo derivation of Guards.
+This is the canonical tracker for Guards on Rootstock.
 
 ## Rules
 - Update this file in the same commit that changes the underlying work.
 - Keep items concrete and testable.
 - If something is blocked, note the blocker inline.
 
-## Immediate Product Reframe
-- [x] Create a clean derivative repo for the Rootstock / Beexo track
-- [x] Remove public-facing Cardano / Pyth positioning from the README and planning surface
-- [x] Remove inherited local `.env` from the derived repo
-- [x] Replace remaining Cardano / Pyth copy in the UI with Rootstock / Beexo positioning
+## Immediate Product Definition
+- [x] Establish the repo as a Rootstock / Beexo product surface
+- [x] Remove migration-oriented positioning from the README and planning surface
+- [x] Remove inherited local `.env` from the repo
+- [x] Replace outdated chain-specific copy in the UI with Rootstock / Beexo positioning
 - [ ] Decide the exact MVP scope for DoraHacks submission
 
 ## Rootstock Smart Contract Track
@@ -61,6 +61,6 @@ This is the canonical tracker for the Rootstock / Beexo derivation of Guards.
 - [ ] DoraHacks submission copy
 
 ## Cleanup
-- [ ] Remove or quarantine legacy Cardano-only package surfaces that will not be reused
-- [ ] Remove obsolete docs that refer to the old Cardano/Pyth submission path
+- [ ] Remove or quarantine legacy package surfaces that will not be reused
+- [ ] Remove obsolete docs that no longer match the current product direction
 - [ ] Rename internal package / workspace labels only if it will not slow down delivery

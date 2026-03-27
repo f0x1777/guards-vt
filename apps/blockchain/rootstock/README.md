@@ -1,6 +1,6 @@
 # Rootstock Surface
 
-This directory is the Rootstock-specific collaboration surface for the adapted version of Guards.
+This directory is the Rootstock-specific collaboration surface for Guards.
 
 Subdirectories:
 - `contracts/`: Solidity contracts and deployment tooling for Rootstock / RSK

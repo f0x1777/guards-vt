@@ -2,10 +2,10 @@
 
 ## Assumptions
 
-- Rootstock is the primary execution chain for this derivation.
+- Rootstock is the primary execution chain.
 - Beexo Connect is the primary wallet UX target.
 - EVM compatibility means much of the existing abstracted treasury UI can be reused.
-- The original Cardano/Pyth-specific execution path should be treated as legacy unless explicitly ported.
+- The product should stay focused on Rootstock-native execution and operator workflows.
 
 ## Proposed Technical Stack
 

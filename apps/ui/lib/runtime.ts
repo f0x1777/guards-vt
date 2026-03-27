@@ -7,5 +7,5 @@ export const runtimeAvailability = {
   vaultBootstrapAvailable: true,
   warningTitle: "Testnet only",
   warningBody:
-    "Guards is being adapted for Rootstock testnet. Mainnet is disabled while the first GuardedTreasuryVault contract, Beexo wallet flow, and treasury action paths are being wired.",
+    "Guards is currently running on Rootstock testnet. Mainnet remains disabled while the first GuardedTreasuryVault contract, Beexo wallet flow, and treasury action paths are finalized.",
 } as const;

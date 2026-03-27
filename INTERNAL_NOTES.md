@@ -6,9 +6,9 @@
 
 ## Origin
 
-Guards was originally built for the **Buenos Aires Pythathon** (Pyth Network hackathon). The challenge was to demonstrate meaningful use of Pyth oracle data beyond simple price feeds. We chose treasury risk management because it requires multiple oracle signals (price, EMA, confidence, freshness) and turns them into real execution decisions — not just charts.
+Guards is a treasury operations product focused on bounded execution, clear governance controls, and practical operator workflows.
 
-The public branding is `guards.one`. The internal package namespace is `anaconda` (the original project codename).
+The public branding is `guards.one`. The internal package namespace remains `anaconda`.
 
 ## Why Treasury Risk Management
 
@@ -25,7 +25,7 @@ The insight was that DAOs define risk in percentages but fail when absolute fiat
 
 ### Chain-agnostic core from day one
 
-Even though Cardano was the only live target, we built `packages/core` with zero chain imports. This was intentional: if the core engine depends on Cardano types, adding Solana or EVM later requires a refactor. By isolating the business logic early, each chain adapter only needs to implement `TreasuryConnector`.
+We built `packages/core` with zero chain imports. That keeps business logic separate from execution surfaces and lets each chain adapter implement `TreasuryConnector` without refactoring core policy logic.
 
 **Trade-off:** More upfront abstraction work. Worth it for multichain credibility.
 
@@ -41,14 +41,9 @@ Early versions had a simple "safe/risky" toggle. We replaced it with a 6-stage r
 - Re-entry with hysteresis prevents oscillation
 - Each stage is explainable to auditors and governance
 
-### DexHunter as primary venue
+### Rootstock vault first
 
-Chosen over Minswap because DexHunter offers:
-- Partner fee infrastructure (revenue capture)
-- Aggregated routing across Cardano DEXs
-- API-first design suitable for automated execution
-
-Minswap is kept as fallback. The venue layer is abstracted so adding new venues is straightforward.
+We deliberately prioritized a bounded Rootstock vault over deeper protocol-specific automation because it is faster to deploy, easier to audit, and easier to demonstrate under time pressure.
 
 ### Static UI → Next.js migration plan
 
@@ -94,16 +89,16 @@ This allows working on multiple features simultaneously without branch switching
 
 | PR | Scope | Status |
 |----|-------|--------|
-| #1 | Documentation bootstrap | Merged |
-| #2 | Core policy engine | Merged |
-| #3 | SVM + EVM scaffolds | Merged |
-| #4 | Cardano PolicyVault simulator | Merged |
-| #5 | Backend orchestration + legacy UI | Merged |
-| #7 | Cardano swap venue strategy | Merged |
-| #8 | Protocol fee model | Merged |
-| #9 | Premium UI overhaul (Next.js) | Open |
-| #10 | Cardano custody model | Merged |
-| #12 | DexHunter live adapter | Merged |
+| #1 | Rootstock contract scaffold | Merged |
+| #3 | Bounded DeFi adapter surface | Merged |
+| #4 | Foundry validation for vault guardrails | Merged |
+| #5 | Rootstock wallet and dashboard flow | Merged |
+| #7 | Rootstock testnet deploy surface | Merged |
+| #8 | Explicit Rootstock wallet onboarding | Merged |
+| #9 | Rootstock UI cleanup | Merged |
+| #10 | Vault admin and treasury ops | Merged |
+| #11 | Deploy env auto-loading | Merged |
+| #12 | Vault bootstrap configuration path | Merged |
 
 Detailed review items and their resolution are tracked in [NEXT_STEPS.md](./NEXT_STEPS.md).
 
@@ -125,12 +120,12 @@ Detailed review items and their resolution are tracked in [NEXT_STEPS.md](./NEXT
 
 See [NEXT_STEPS.md](./NEXT_STEPS.md) for the full backlog. Key priorities:
 
-1. **Wire real Cardano wallet** into DexHunter execution path
-2. **Port PolicyVault to Aiken** (on-chain validator)
-3. **Integrate real Pyth signed updates** on preprod
-4. **Surface fee breakdown** in operator UI
+1. **Deploy `GuardedTreasuryVault`** on Rootstock testnet
+2. **Validate Beexo Connect** in the final demo flow
+3. **Integrate one real protocol rail** such as Money on Chain or Sovryn
+4. **Surface fee and action breakdown** in operator UI
 5. **Add CI** for tests and typecheck
-6. **Deploy storage** — replace SQLite with production-grade persistence
+6. **Prepare submission assets** for the final demo and pitch
 
 ## Team & Contact
 

@@ -8,7 +8,7 @@ export function Footer() {
               <img src="/guards-logo.png" alt="Guards" width={144} height={32} decoding="async" className="h-8 w-auto" />
             </div>
             <p className="text-sm text-white/40 leading-relaxed max-w-md">
-              Treasury operations and bounded execution for Bitcoin DeFi teams adapting to Rootstock and Beexo Connect.
+              Treasury operations and bounded execution for Bitcoin DeFi teams on Rootstock.
             </p>
           </div>
 
@@ -20,7 +20,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 pt-5 border-t border-white/5 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs text-white/25">
-          <span>Rootstock adaptation in progress. Beexo Connect is the target wallet UX path for this derivative.</span>
+          <span>Rootstock treasury operations with Beexo Connect and bounded execution controls.</span>
           <span className="font-mono">guards.one</span>
         </div>
       </div>

@@ -74,7 +74,7 @@ export function PreprodWarningModal() {
             <div className="grid gap-2 text-sm text-text-secondary">
               <p>
                 <strong className="text-text">What works now:</strong> dashboard flows, profile switching,
-                treasury action staging, and demo-first wallet connectivity for the Rootstock adaptation.
+                treasury action staging, and demo-first wallet connectivity on Rootstock.
               </p>
               <p>
                 <strong className="text-text">What does not work yet:</strong> mainnet
