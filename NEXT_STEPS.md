@@ -26,8 +26,14 @@ This is the canonical tracker for Guards on Rootstock.
 - [x] Add a reproducible Rootstock testnet deploy surface for the first vault contract
 - [x] Add a reproducible post-deploy bootstrap/configuration path for the first vault contract
 - [x] Require a governance signer for post-deploy vault bootstrap configuration
+- [x] Clarify in-repo that `GuardedTreasuryVault` is a bounded vault, not the full policy engine
+- [x] Document the pending contract architecture and operating model for Money on Chain / Sovryn execution
 - [ ] Deploy at least one contract on Rootstock testnet
 - [ ] Document deployed addresses and networks
+- [ ] Decide whether adapter allowlists live in the vault or in a standalone registry
+- [ ] Implement `MoneyOnChainAdapter` with bounded mint / redeem entrypoints
+- [ ] Implement `SovrynSwapAdapter` with bounded swap entrypoints
+- [ ] Add end-to-end Foundry tests for vault -> adapter -> protocol -> vault settlement
 
 ## Beexo Connect Track
 - [x] Install and integrate `xo-connect`
