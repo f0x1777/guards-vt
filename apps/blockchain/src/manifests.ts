@@ -2,7 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 export interface CollaborationSurface {
-  chain: "cardano" | "svm" | "evm";
+  chain: "rootstock" | "cardano" | "svm" | "evm";
   appRoot: string;
   contractsRoot?: string;
   offchainRoot?: string;

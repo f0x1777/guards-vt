@@ -15,13 +15,9 @@ This is the canonical tracker for the Rootstock / Beexo derivation of Guards.
 - [ ] Decide the exact MVP scope for DoraHacks submission
 
 ## Rootstock Smart Contract Track
-- [ ] Define the first contract scope for Rootstock
-- [ ] Decide whether the first contract is:
-  - treasury vault
-  - guarded transfer executor
-  - bounded rebalance policy
-  - multisig-compatible execution module
-- [ ] Create `apps/blockchain/rootstock/contracts`
+- [x] Define the first contract scope for Rootstock
+- [x] Decide the first contract scope: `GuardedTreasuryVault` as a bounded treasury vault / guarded transfer executor
+- [x] Create `apps/blockchain/rootstock/contracts`
 - [ ] Add Solidity / Foundry or Hardhat setup for Rootstock
 - [ ] Deploy at least one contract on Rootstock testnet
 - [ ] Document deployed addresses and networks
