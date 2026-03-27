@@ -1,13 +1,14 @@
 # apps/blockchain
 
-This workspace is the team-facing entrypoint for all chain, contract, oracle-witness and execution integration work.
+This workspace is the team-facing entrypoint for all chain, contract, and execution integration work.
 
 The current implementation still uses `packages/*` as the source of truth for reusable adapters and simulators. This app exists so the team has one obvious place to iterate on:
 
 - Cardano smart contracts / `Aiken`
+- Rootstock contracts / `Solidity`
 - off-chain transaction builders
-- Pyth witness integration
-- swap-venue adapters
+- wallet / signer adapters
+- protocol adapters
 - future SVM / EVM execution connectors
 
 ## Current rule
@@ -20,6 +21,8 @@ Use `packages/*` for shared libraries and stable adapter code that needs to be i
 
 - `cardano/contracts`: target home for `Aiken` validators and related test vectors
 - `cardano/offchain`: target home for transaction builders, witness preparation and execution services
+- `rootstock/contracts`: target home for Solidity contracts and deployment scripts
+- `rootstock/offchain`: target home for Rootstock wallet and protocol wiring
 - `svm`: collaboration surface for Solana/SVM work
 - `evm`: collaboration surface for EVM work
 - `src/manifests.ts`: machine-readable map of the current source of truth and next planned artifacts
@@ -27,6 +30,7 @@ Use `packages/*` for shared libraries and stable adapter code that needs to be i
 ## Today vs next
 
 Today:
+- Rootstock contract scaffold: `apps/blockchain/rootstock/contracts`
 - Cardano simulator/spec: `packages/cardano`
 - Cardano Aiken scaffold: `apps/blockchain/cardano/contracts/aiken`
 - backend orchestration: `apps/backend`
@@ -37,6 +41,7 @@ Import the live collector explicitly from `@anaconda/blockchain/cardano/offchain
 The generic `@anaconda/blockchain/cardano` entrypoint stays side-effect free and does not load dotenv or the Pyth SDK.
 
 Next:
+- move Rootstock-specific implementation into `apps/blockchain/rootstock/*`
 - move more live off-chain execution work into `apps/blockchain/cardano/offchain`
 - keep reusable types/engines in `packages/core`
 

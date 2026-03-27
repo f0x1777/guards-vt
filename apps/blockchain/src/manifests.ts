@@ -2,7 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 export interface CollaborationSurface {
-  chain: "cardano" | "svm" | "evm";
+  chain: "rootstock" | "cardano" | "svm" | "evm";
   appRoot: string;
   contractsRoot?: string;
   offchainRoot?: string;
@@ -22,6 +22,25 @@ export const blockchainSurface: Record<
   CollaborationSurface["chain"],
   CollaborationSurface
 > = {
+  rootstock: {
+    chain: "rootstock",
+    appRoot: fromRoot("apps", "blockchain", "rootstock"),
+    contractsRoot: fromRoot("apps", "blockchain", "rootstock", "contracts"),
+    offchainRoot: fromRoot("apps", "blockchain", "rootstock", "offchain"),
+    adapterPackage: "@anaconda/evm",
+    currentSourceOfTruth: [
+      fromRoot("apps", "blockchain", "rootstock", "contracts", "src", "GuardedTreasuryVault.sol"),
+      fromRoot("apps", "blockchain", "rootstock", "contracts", "foundry.toml"),
+      fromRoot("apps", "blockchain", "rootstock", "offchain", "README.md"),
+      fromRoot("packages", "evm", "src", "index.ts"),
+    ],
+    nextArtifacts: [
+      "Foundry install in real dev environment",
+      "Rootstock testnet deployment script",
+      "Beexo-driven EIP-1193 wallet UX",
+      "Bounded treasury transfers and withdrawals",
+    ],
+  },
   cardano: {
     chain: "cardano",
     appRoot: fromRoot("apps", "blockchain", "cardano"),
